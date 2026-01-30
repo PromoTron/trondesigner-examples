@@ -1,5 +1,8 @@
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
     <script
             async
             src="{TD_URL}/js/website-integration.js"
@@ -7,21 +10,50 @@
             data-td-api="{TD_URL}/api"
             data-td-api-key="{TD_API_KEY}"
     ></script>
+    <title>Tron Designer Integration - Examples</title>
 </head>
 <body>
-<div>
-    <ul>
-        <li><a href="quick_start.html">Quick Start Example</a></li>
-        <li><a href="attributes_exact_basic.html">Attributes - Exact - Basic Example</a></li>
-        <li><a href="builder_exect_basic.html">Builder - Exact - Basic Example</a></li>
-        <li><a href="builder_partial_basic.html">Builder - Partial - Basic Example</a></li>
-        <li><a href="json_exect_basic.html">JSON - Exact - Basic Example</a></li>
-        <li><a href="json_partial_basic.html">JSON - Partial - Basic Example</a></li>
-        <li><a href="get_images.html">Get Images Example</a></li>
-    </ul>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">All examples</a>
 </div>
-<div>
-    <a href="index.html">Back to root</a>
+<div class="examples">
+    <div class="example">
+        <h2><a href="quick_start.html">Quick Start</a></h2>
+        <div>Auto-opens the designer on page load using exact data.</div>
+    </div>
+    <div class="example">
+        <h2><a href="attributes_exact_basic.html">Attributes - Exact</a></h2>
+        <div>Opens using data attributes on a button.</div>
+    </div>
+    <div class="example">
+        <h2><a href="builder_exect_basic.html">Builder - Exact</a></h2>
+        <div>Uses the JS args builder for an exact product + printing.</div>
+    </div>
+    <div class="example">
+        <h2><a href="builder_partial_basic.html">Builder - Partial</a></h2>
+        <div>Starts with a model; user picks variants and printings.</div>
+    </div>
+    <div class="example">
+        <h2><a href="json_exect_basic.html">JSON - Exact</a></h2>
+        <div>Opens with a full explicit JSON payload.</div>
+    </div>
+    <div class="example">
+        <h2><a href="json_partial_basic.html">JSON - Partial</a></h2>
+        <div>Opens with a minimal JSON payload (model only).</div>
+    </div>
+    <div class="example">
+        <h2><a href="get_images.html">Get Images</a></h2>
+        <div>Retrieves motive area + visualization images after creation.</div>
+    </div>
 </div>
 </body>
 </html>

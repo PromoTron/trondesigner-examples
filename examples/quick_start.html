@@ -1,11 +1,18 @@
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
     <script>
-        function tronDesignerInitialized() {
+        function openDesigner() {
             window.tronDesigner
-                .setExactProduct("PFC", undefined, (b) => b.addVariant("10000205"))
+                .setExactProduct("PFC", undefined, (b) => b.addVariant("10086021"))
                 .addExactPrinting("front", "PAD03")
                 .open({ mode: "dialog" });
+        }
+
+        function tronDesignerInitialized() {
+            openDesigner();
         }
     </script>
     <script
@@ -16,13 +23,31 @@
             data-td-api-key="{TD_API_KEY}"
             data-td-script-initialized-callback="tronDesignerInitialized"
     ></script>
+    <title>Tron Designer Integration - Quick Start Example</title>
 </head>
 <body>
-<div>
-    <h1>Tron Designer Integration Example</h1>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
 </div>
-<div>
-    <a href="index.html">Back to root</a>
+<div class="example">
+    <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+    <div class="actions">
+        <h4>Quick Start</h4>
+        <button class="btn" onclick="openDesigner()">
+            Reopen Designer
+            <br>
+            <small>Oregon 400 ml - Red</small>
+        </button>
+    </div>
 </div>
 </body>
 </html>

@@ -1,5 +1,8 @@
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
     <script
             async
             src="{TD_URL}/js/website-integration.js"
@@ -28,19 +31,34 @@
     <title>Tron Designer Integration - Attributes Basic Example</title>
 </head>
 <body>
-<div>
-    <!-- Product “Customize” button -->
-    <button
-            data-td-action="OpenCreate"
-            data-td-supplier-code="PFC"
-            data-td-product-code="10086021"
-            data-td-print-position-code="front"
-            data-td-print-technology-code="PAD03">
-        Oregon 400 ml - Red
-    </button>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
 </div>
-<div>
-    <a href="index.html">Back to root</a>
+<div class="example">
+    <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+    <div class="actions">
+        <h4>Attributes - Exact</h4>
+        <button
+                class="btn"
+                data-td-action="OpenCreate"
+                data-td-supplier-code="PFC"
+                data-td-product-code="10086021"
+                data-td-print-position-code="front"
+                data-td-print-technology-code="PAD03">
+            Open Designer
+            <br>
+            <small>Oregon 400 ml - Red</small>
+        </button>
+    </div>
 </div>
 </body>
 </html>
