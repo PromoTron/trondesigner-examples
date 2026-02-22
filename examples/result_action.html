@@ -1,0 +1,117 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <script>
+        const td_open = (result) => {
+            console.log("Opening Tron Designer...");
+            const td = window.tronDesigner;
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+            console.log(td.argsBuilder.build())
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "result": result
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_result_none = () => {
+            td_open({resultAction: "NONE"});
+        }
+
+        const td_open_result_close = () => {
+            td_open({resultAction: "CLOSE"});
+        }
+
+        const td_open_result_dialog = () => {
+            td_open({
+                resultAction: "DIALOG",
+                closeDialog: {
+                    title: "Print Graphics ready",
+                    message: "Print Graphics has been successfully created and saved.",
+                    buttonText: "Continue to cart"
+                }
+            });
+        }
+    </script>
+    <title>Tron Designer Integration - JS Builder Basic Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Result – None</h4>
+            <button class="btn" onclick="td_open_result_none()">
+                Open Designer
+                <br>
+                <small>Result Action: None</small>
+            </button>
+        </div>
+    </div>
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Result – Close</h4>
+            <button class="btn" onclick="td_open_result_close()">
+                Open Designer
+                <br>
+                <small>Result Action: Close</small>
+            </button>
+        </div>
+    </div>
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Result – Dialog</h4>
+            <button class="btn" onclick="td_open_result_dialog()">
+                Open Designer
+                <br>
+                <small>Result Action: Dialog</small>
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
