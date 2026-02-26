@@ -16,35 +16,13 @@
             const td = window.tronDesigner;
 
             td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
+                b.addVariant('R2200D94');
+                b.addVariant('R2200E13');
             });
-            td.addExactPrinting('front', 'PAD03');
-            td.addExactPrinting('back', 'PAD03');
+            td.addExactPrinting('Left chest', 'MR07');
+            td.addExactPrinting('Right chest', 'MR07');
 
-            td.openDesigner({
-                "openMode": "Create",
-                "dataMode": "Exact",
-                "printJob": {
-                    "addPrintings": [
-                        {
-                            "printPositionCode": "front",
-                            "printTechnologyCode": "PAD03"
-                        },
-                        {
-                            "printPositionCode": "back",
-                            "printTechnologyCode": "PAD03"
-                        }
-                    ],
-                    "addProducts": {
-                        "supplierCode": "PFC",
-                        "variants": [
-                            {
-                                "productCode": "10086021"
-                            }
-                        ]
-                    }
-                }
-            }, {mode: "dialog"});
+            td.open({mode: "dialog"});
         }
 
         const td_open_multiple_positions = () => {
@@ -52,81 +30,15 @@
             const td = window.tronDesigner;
 
             td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
+                b.addVariant('R2200D94');
+                b.addVariant('R2200E13');
             });
-            td.addExactPrinting('front', 'PAD03');
-            td.addExactPrinting('back', 'PAD03');
-            td.addExactPrinting('left', 'PAD03');
-            td.addExactPrinting('right', 'PAD03');
+            td.addExactPrinting('Left chest', 'MR07');
+            td.addExactPrinting('Right chest', 'MR07');
+            td.addExactPrinting('Left bicep', 'MR07');
+            td.addExactPrinting('Right bicep', 'MR07');
 
-            td.openDesigner({
-                "openMode": "Create",
-                "dataMode": "Exact",
-                "printJob": {
-                    "addPrintings": [
-                        {
-                            "printPositionCode": "front",
-                            "printTechnologyCode": "PAD03"
-                        },
-                        {
-                            "printPositionCode": "back",
-                            "printTechnologyCode": "PAD03"
-                        },
-                        {
-                            "printPositionCode": "left",
-                            "printTechnologyCode": "PAD03"
-                        },
-                        {
-                            "printPositionCode": "right",
-                            "printTechnologyCode": "PAD03"
-                        }
-                    ],
-                    "addProducts": {
-                        "supplierCode": "PFC",
-                        "variants": [
-                            {
-                                "productCode": "10086021"
-                            }
-                        ]
-                    }
-                }
-            }, {mode: "dialog"});
-        }
-
-        const td_open_mixed_technologies = () => {
-            console.log("Opening with different print technologies...");
-            const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-            td.addExactPrinting('back', 'SCREEN01');
-
-            td.openDesigner({
-                "openMode": "Create",
-                "dataMode": "Exact",
-                "printJob": {
-                    "addPrintings": [
-                        {
-                            "printPositionCode": "front",
-                            "printTechnologyCode": "PAD03"
-                        },
-                        {
-                            "printPositionCode": "back",
-                            "printTechnologyCode": "SCREEN01"
-                        }
-                    ],
-                    "addProducts": {
-                        "supplierCode": "PFC",
-                        "variants": [
-                            {
-                                "productCode": "10086021"
-                            }
-                        ]
-                    }
-                }
-            }, {mode: "dialog"});
+            td.open({mode: "dialog"});
         }
 
         const td_open_partial_multiple = () => {
@@ -141,15 +53,19 @@
                 "printJob": {
                     "addPrintings": [
                         {
-                            "printPositionCode": "front"
+                            "printPositionCode": "Left chest",
+                            "printTechnologyCode": "MR07"
                         },
                         {
-                            "printPositionCode": "back"
+                            "printPositionCode": "Right chest",
+                            "printTechnologyCode": "MR07"
                         }
                     ],
                     "addProducts": {
                         "supplierCode": "PFC",
-                        "modelCode": "10086"
+                        "model": {
+                            "modelCode": "R2200"
+                        }
                     }
                 }
             }, {mode: "dialog"});
@@ -161,49 +77,37 @@
 
             // Simulate dynamic configuration from user selection
             const positions = [
-                { position: 'front', technology: 'PAD03' },
-                { position: 'back', technology: 'PAD03' }
+                {position: 'Left chest', technology: 'MR07'},
+                {position: 'Right chest', technology: 'MR07'},
             ];
 
             td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
+                b.addVariant('R2200D94');
+                b.addVariant('R2200E13');
             });
 
             positions.forEach(p => {
                 td.addExactPrinting(p.position, p.technology);
             });
 
-            td.openDesigner({
-                "openMode": "Create",
-                "dataMode": "Exact",
-                "printJob": {
-                    "addPrintings": positions.map(p => ({
-                        "printPositionCode": p.position,
-                        "printTechnologyCode": p.technology
-                    })),
-                    "addProducts": {
-                        "supplierCode": "PFC",
-                        "variants": [
-                            {
-                                "productCode": "10086021"
-                            }
-                        ]
-                    }
-                }
-            }, {mode: "dialog"});
+            td.open({mode: "dialog"});
         }
     </script>
     <title>Tron Designer Integration - Multiple Printings Example</title>
 </head>
 <body>
 <div class="header">
-    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
+                Guide</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -211,7 +115,8 @@
 
 <div class="info-box">
     <h3>Multiple Print Positions</h3>
-    <p>Configure products with multiple print positions and technologies in a single print job. Users can design for all positions in one session.</p>
+    <p>Configure products with multiple print positions and technologies in a single print job. Users can design for all
+        positions in one session.</p>
     <p><strong>Use cases:</strong></p>
     <ul>
         <li>Front and back printing on apparel</li>
@@ -224,55 +129,65 @@
 
 <div class="examples">
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div style="position: relative; width: 300px; height: 300px;">
+            <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/3746dce3-68a8-4947-af32-e2bb801c8b04"
+                 alt="Corgi short sleeve men's t-shirt"
+                 style="position: absolute; top: 0; left: 0; width: 60%;  z-index: 1;"/>
+            <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/eeb941a5-d4d5-464c-b322-6d784dca7372"
+                 alt="Corgi short sleeve men's t-shirt"
+                 style="position: absolute; bottom: 0; right: 0; width: 60%; z-index: 2;"/>
+        </div>
         <div class="actions">
-            <h4>Two Positions (Front + Back)</h4>
+            <h4>Two Positions (Left & Right chest)</h4>
             <button class="btn" onclick="td_open_two_positions()">
                 Open Designer
                 <br>
-                <small>Front & Back printing</small>
+                <small>Left & right chest</small>
             </button>
         </div>
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div style="position: relative; width: 300px; height: 300px;">
+            <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/b53a61f5-e757-4ff8-a6ee-7afe3508e2a1"
+                 alt="Corgi short sleeve men's t-shirt"
+                 style="position: absolute; top: 0; left: 0; width: 60%;  z-index: 1;"/>
+            <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/eeb941a5-d4d5-464c-b322-6d784dca7372"
+                 alt="Corgi short sleeve men's t-shirt"
+                 style="position: absolute; bottom: 0; right: 0; width: 60%; z-index: 5;"/>
+            <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/35caf485-965c-4f63-911c-96aa54d63047"
+                 alt="Corgi short sleeve men's t-shirt"
+                 style="position: absolute; top: 0; right: 0; width: 60%;  z-index: 3;"/>
+            <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/3746dce3-68a8-4947-af32-e2bb801c8b04"
+                 alt="Corgi short sleeve men's t-shirt"
+                 style="position: absolute; bottom: 0; left: 0; width: 60%; z-index: 4;"/>
+        </div>
         <div class="actions">
             <h4>Multiple Positions (4 sides)</h4>
             <button class="btn" onclick="td_open_multiple_positions()">
                 Open Designer
                 <br>
-                <small>Front, Back, Left, Right</small>
+                <small>Left & right chest, left & right bicep</small>
             </button>
         </div>
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
-        <div class="actions">
-            <h4>Mixed Technologies</h4>
-            <button class="btn" onclick="td_open_mixed_technologies()">
-                Open Designer
-                <br>
-                <small>Front: PAD03, Back: SCREEN01</small>
-            </button>
-        </div>
-    </div>
-
-    <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/eeb941a5-d4d5-464c-b322-6d784dca7372"
+             alt="Corgi short sleeve men's t-shirt"/>
         <div class="actions">
             <h4>Partial Mode - Multiple Positions</h4>
             <button class="btn" onclick="td_open_partial_multiple()">
                 Open Designer
                 <br>
-                <small>User selects variants & techs</small>
+                <small>User selects variants</small>
             </button>
         </div>
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/eeb941a5-d4d5-464c-b322-6d784dca7372"
+             alt="Corgi short sleeve men's t-shirt"/>
         <div class="actions">
             <h4>Dynamic Configuration</h4>
             <button class="btn" onclick="td_open_dynamic_positions()">
@@ -325,25 +240,15 @@ td.openDesigner(td.argsBuilder.build(), {mode: "dialog"});</code></pre>
 
     <h4 style="margin-top: 20px;">3. Dynamic from Array</h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const positions = [
-    { position: 'front', technology: 'PAD03' },
-    { position: 'back', technology: 'SCREEN01' }
+        {position: 'Left chest', technology: 'MR07'},
+        {position: 'Right chest', technology: 'MR07'},
 ];
 
 positions.forEach(p => {
     td.addExactPrinting(p.position, p.technology);
 });
 
-td.openDesigner({
-    "openMode": "Create",
-    "dataMode": "Exact",
-    "printJob": {
-        "addPrintings": positions.map(p => ({
-            "printPositionCode": p.position,
-            "printTechnologyCode": p.technology
-        })),
-        "addProducts": { /* ... */ }
-    }
-}, {mode: "dialog"});</code></pre>
+td.openDesigner( {mode: "dialog"});</code></pre>
 
     <h4 style="margin-top: 20px;">Benefits of Multiple Printings</h4>
     <ul style="line-height: 1.8;">

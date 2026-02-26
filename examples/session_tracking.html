@@ -49,7 +49,12 @@
                             }
                         ]
                     },
-                    "externalUserId": currentUserId
+                    "customer":{
+                        "customerIdentity": currentUserId,
+                        "customerEmail": currentUserId + "@example.com",
+                        "customerPerson": "User " + currentUserId,
+                        "customerCompany": "Company of " + currentUserId
+                    }
                 }
             }, {mode: "dialog"});
         }
@@ -81,8 +86,9 @@
                             }
                         ]
                     },
-                    "externalUserId": currentUserId,
-                    "externalOrderId": currentOrderId
+                    "customer":{
+                        "orderCode": currentOrderId
+                    }
                 }
             }, {mode: "dialog"});
         }
@@ -114,9 +120,11 @@
                             }
                         ]
                     },
-                    "externalUserId": currentUserId,
-                    "externalOrderId": currentOrderId,
-                    "externalCartItemId": currentCartItemId
+                    "customer": {
+                        "orderCode": currentOrderId,
+                        "orderItemCode": currentCartItemId,
+                        "orderTitle": "Example Product in Cart"
+                    }
                 }
             }, {mode: "dialog"});
         }
@@ -156,8 +164,7 @@
                             }
                         ]
                     },
-                    "externalUserId": currentUserId,
-                    "customData": customData
+                    "customProperties": customData
                 }
             }, {mode: "dialog"});
         }
@@ -196,10 +203,16 @@
                             }
                         ]
                     },
-                    "externalUserId": currentUserId,
-                    "externalOrderId": currentOrderId,
-                    "externalCartItemId": currentCartItemId,
-                    "customData": customData
+                    "customer": {
+                        "customerIdentity": currentUserId,
+                        "customerEmail": currentUserId + "@example.com",
+                        "customerPerson": "User " + currentUserId,
+                        "customerCompany": "Company of " + currentUserId,
+                        "orderCode": currentOrderId,
+                        "orderItemCode": currentCartItemId,
+                        "orderTitle": "Example Product in Cart"
+                    },
+                    "customProperties": customData
                 }
             }, {mode: "dialog"});
         }
@@ -252,7 +265,7 @@
 
 <div class="examples">
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>User Tracking</h4>
             <button class="btn" onclick="td_open_with_user_tracking()">
@@ -264,7 +277,7 @@
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Order Tracking</h4>
             <button class="btn" onclick="td_open_with_order_tracking()">
@@ -276,7 +289,7 @@
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Cart Item Tracking</h4>
             <button class="btn" onclick="td_open_with_cart_tracking()">
@@ -288,7 +301,7 @@
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Custom Metadata</h4>
             <button class="btn" onclick="td_open_with_custom_data()">
@@ -300,7 +313,7 @@
     </div>
 
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Complete Tracking</h4>
             <button class="btn" onclick="td_open_complete_tracking()">
@@ -349,16 +362,36 @@
     "openMode": "Create",
     "dataMode": "Exact",
     "printJob": {
-        // ... product and printing config ...
-        "externalUserId": "user_12345",
-        "externalOrderId": "order_67890",
-        "externalCartItemId": "item_54321",
-        "customData": {
-            "campaignId": "summer2024",
-            "source": "email",
-            "variant": "A"
+        "addPrintings": [
+            {
+                "printPositionCode": "front",
+                "printTechnologyCode": "PAD03"
+            }
+        ],
+        "addProducts": {
+            "supplierCode": "PFC",
+            "variants": [
+                {
+                    "productCode": "10086021"
+                }
+            ]
+        },
+        "customer": {
+            "customerIdentity": currentUserId,
+            "customerEmail": currentUserId + "@example.com",
+            "customerPerson": "User " + currentUserId,
+            "customerCompany": "Company of " + currentUserId,
+            "orderCode": currentOrderId,
+            "orderItemCode": currentCartItemId,
+            "orderTitle": "Example Product in Cart"
+        },
+        "customProperties": {
+            campaignId: "summer2024",
+            source: "product_page",
+            sessionStart: "2024-06-01T12:00:00Z",
+            userSegment: "premium"
         }
-    }
+    },
 }, {mode: "dialog"});</code></pre>
 </div>
 </body>

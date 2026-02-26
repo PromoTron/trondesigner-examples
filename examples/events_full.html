@@ -23,26 +23,32 @@
             overflow-y: auto;
             margin-top: 20px;
         }
+
         .event-entry {
             padding: 8px 0;
             border-bottom: 1px solid #333;
         }
+
         .event-time {
             color: #858585;
             font-size: 11px;
         }
+
         .event-type {
             color: #4ec9b0;
             font-weight: bold;
         }
+
         .event-action {
             color: #dcdcaa;
         }
+
         .event-data {
             color: #ce9178;
             margin-left: 20px;
             font-size: 12px;
         }
+
         .clear-log {
             margin-top: 10px;
         }
@@ -57,35 +63,28 @@
 
             // Subscribe to all available events
             td.subscribeDesignerEvent("printJob", "created", onPrintJobCreated);
-            td.subscribeDesignerEvent("printJob", "updated", onPrintJobUpdated);
-            td.subscribeDesignerEvent("printJob", "deleted", onPrintJobDeleted);
-            td.subscribeDesignerEvent("editor", "opened", onEditorOpened);
-            td.subscribeDesignerEvent("editor", "closed", onEditorClosed);
+            td.subscribeDesignerEvent("printJob", "updated", logEventData);
+            td.subscribeDesignerEvent("logo", "created", logEventData);
+            td.subscribeDesignerEvent("logo", "updated", logEventData);
+            td.subscribeDesignerEvent("logo", "deleted", logEventData);
+            td.subscribeDesignerEvent("text", "created", logEventData);
+            td.subscribeDesignerEvent("text", "updated", logEventData);
+            td.subscribeDesignerEvent("proofreading", "created", logEventData);
+            td.subscribeDesignerEvent("proofreading", "updated", logEventData);
+
 
             logEvent("Events", "Subscribed", "All event listeners registered");
         }
 
         function onPrintJobCreated(data) {
-            printJobGuid = data.printJobGuid;
-            logEvent("PrintJob", "Created", `GUID: ${data.printJobGuid}`, data);
+            printJobGuid = data.entityGuid;
+            logEvent("PrintJob", "Created", `GUID: ${data.entityGuid}`, data);
             document.getElementById('edit-section').style.display = 'block';
-            document.getElementById('guid-display').textContent = data.printJobGuid;
+            document.getElementById('guid-display').textContent = data.entityGuid;
         }
 
-        function onPrintJobUpdated(data) {
-            logEvent("PrintJob", "Updated", `GUID: ${data.printJobGuid}`, data);
-        }
-
-        function onPrintJobDeleted(data) {
-            logEvent("PrintJob", "Deleted", `GUID: ${data.printJobGuid}`, data);
-        }
-
-        function onEditorOpened(data) {
-            logEvent("Editor", "Opened", "Editor has been opened", data);
-        }
-
-        function onEditorClosed(data) {
-            logEvent("Editor", "Closed", "Editor has been closed", data);
+        function logEventData(data) {
+            logEvent(data.entityType, data.eventType, `GUID: ${data.entityGuid}`, data.detail);
         }
 
         function logEvent(type, action, message, data = null) {
@@ -171,13 +170,17 @@
 </head>
 <body>
 <div class="header">
-    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
+                Guide</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -198,7 +201,8 @@
 
 <div class="examples">
     <div class="example">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
+             alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Create New Print Job</h4>
             <button class="btn" onclick="td_create_new()">
@@ -210,7 +214,8 @@
     </div>
 
     <div class="example" id="edit-section" style="display: none;">
-        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
+             alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Edit Print Job</h4>
             <p><strong>GUID:</strong> <code id="guid-display"></code></p>
