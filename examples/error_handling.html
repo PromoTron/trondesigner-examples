@@ -1,0 +1,403 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <style>
+        .error-display {
+            background: #ffe6e6;
+            border: 2px solid #ff4444;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        .error-display.show {
+            display: block;
+        }
+        .success-display {
+            background: #e6ffe6;
+            border: 2px solid #44ff44;
+            color: #008800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: none;
+        }
+        .success-display.show {
+            display: block;
+        }
+    </style>
+    <script>
+        function showError(message) {
+            const errorBox = document.getElementById('error-box');
+            errorBox.textContent = message;
+            errorBox.classList.add('show');
+            setTimeout(() => {
+                errorBox.classList.remove('show');
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successBox = document.getElementById('success-box');
+            successBox.textContent = message;
+            successBox.classList.add('show');
+            setTimeout(() => {
+                successBox.classList.remove('show');
+            }, 5000);
+        }
+
+        const td_open_invalid_product = () => {
+            console.log("Attempting to open with invalid product code...");
+            const td = window.tronDesigner;
+
+            try {
+                td.setExactProduct('INVALID_SUPPLIER', undefined, (b) => {
+                    b.addVariant('INVALID_PRODUCT_CODE');
+                });
+                td.addExactPrinting('front', 'PAD03');
+
+                td.openDesigner({
+                    "openMode": "Create",
+                    "dataMode": "Exact",
+                    "printJob": {
+                        "addPrintings": [
+                            {
+                                "printPositionCode": "front",
+                                "printTechnologyCode": "PAD03"
+                            }
+                        ],
+                        "addProducts": {
+                            "supplierCode": "INVALID_SUPPLIER",
+                            "variants": [
+                                {
+                                    "productCode": "INVALID_PRODUCT_CODE"
+                                }
+                            ]
+                        }
+                    }
+                }, {mode: "dialog"})
+                .then(() => {
+                    showSuccess("Designer opened successfully (unexpected)");
+                })
+                .catch((error) => {
+                    showError("Error: " + (error.message || error));
+                    console.error("Failed to open designer:", error);
+                });
+            } catch (error) {
+                showError("Caught exception: " + error.message);
+                console.error("Exception:", error);
+            }
+        }
+
+        const td_open_invalid_printing = () => {
+            console.log("Attempting to open with invalid print position...");
+            const td = window.tronDesigner;
+
+            try {
+                td.setExactProduct('PFC', undefined, (b) => {
+                    b.addVariant('10086021');
+                });
+                td.addExactPrinting('invalid_position', 'INVALID_TECH');
+
+                td.openDesigner({
+                    "openMode": "Create",
+                    "dataMode": "Exact",
+                    "printJob": {
+                        "addPrintings": [
+                            {
+                                "printPositionCode": "invalid_position",
+                                "printTechnologyCode": "INVALID_TECH"
+                            }
+                        ],
+                        "addProducts": {
+                            "supplierCode": "PFC",
+                            "variants": [
+                                {
+                                    "productCode": "10086021"
+                                }
+                            ]
+                        }
+                    }
+                }, {mode: "dialog"})
+                .catch((error) => {
+                    showError("Print configuration error: " + (error.message || error));
+                    console.error("Failed:", error);
+                });
+            } catch (error) {
+                showError("Configuration exception: " + error.message);
+            }
+        }
+
+        const td_open_invalid_guid = () => {
+            console.log("Attempting to edit with invalid GUID...");
+            const td = window.tronDesigner;
+
+            try {
+                td.openDesigner({
+                    "openMode": "Edit",
+                    "printJobGuid": "00000000-0000-0000-0000-000000000000"
+                }, {mode: "dialog"})
+                .catch((error) => {
+                    showError("Invalid GUID error: " + (error.message || error));
+                    console.error("Failed:", error);
+                });
+            } catch (error) {
+                showError("GUID exception: " + error.message);
+            }
+        }
+
+        const td_open_with_error_handling = () => {
+            console.log("Opening with comprehensive error handling...");
+            const td = window.tronDesigner;
+
+            // Pre-flight validation
+            const productCode = '10086021';
+            const supplierCode = 'PFC';
+
+            if (!productCode || !supplierCode) {
+                showError("Validation failed: Missing required parameters");
+                return;
+            }
+
+            try {
+                td.setExactProduct(supplierCode, undefined, (b) => {
+                    b.addVariant(productCode);
+                });
+                td.addExactPrinting('front', 'PAD03');
+
+                // Subscribe to error events if available
+                td.subscribeDesignerEvent("error", "occurred", (data) => {
+                    showError("Designer error: " + JSON.stringify(data));
+                });
+
+                td.openDesigner({
+                    "openMode": "Create",
+                    "dataMode": "Exact",
+                    "printJob": {
+                        "addPrintings": [
+                            {
+                                "printPositionCode": "front",
+                                "printTechnologyCode": "PAD03"
+                            }
+                        ],
+                        "addProducts": {
+                            "supplierCode": supplierCode,
+                            "variants": [
+                                {
+                                    "productCode": productCode
+                                }
+                            ]
+                        }
+                    }
+                }, {mode: "dialog"})
+                .then(() => {
+                    showSuccess("Designer opened successfully with error handling!");
+                })
+                .catch((error) => {
+                    showError("Failed to open designer: " + (error.message || error));
+                    console.error("Error details:", error);
+
+                    // Implement retry logic
+                    console.log("Could implement retry logic here...");
+                });
+            } catch (error) {
+                showError("Unexpected error: " + error.message);
+                console.error("Exception details:", error);
+            }
+        }
+
+        const td_open_with_timeout = () => {
+            console.log("Opening with timeout handling...");
+            const td = window.tronDesigner;
+
+            const timeoutMs = 5000;
+            let timeoutHandle;
+
+            const timeoutPromise = new Promise((_, reject) => {
+                timeoutHandle = setTimeout(() => {
+                    reject(new Error("Designer initialization timeout"));
+                }, timeoutMs);
+            });
+
+            try {
+                td.setExactProduct('PFC', undefined, (b) => {
+                    b.addVariant('10086021');
+                });
+                td.addExactPrinting('front', 'PAD03');
+
+                const openPromise = td.openDesigner({
+                    "openMode": "Create",
+                    "dataMode": "Exact",
+                    "printJob": {
+                        "addPrintings": [
+                            {
+                                "printPositionCode": "front",
+                                "printTechnologyCode": "PAD03"
+                            }
+                        ],
+                        "addProducts": {
+                            "supplierCode": "PFC",
+                            "variants": [
+                                {
+                                    "productCode": "10086021"
+                                }
+                            ]
+                        }
+                    }
+                }, {mode: "dialog"});
+
+                Promise.race([openPromise, timeoutPromise])
+                    .then(() => {
+                        clearTimeout(timeoutHandle);
+                        showSuccess("Designer opened within timeout!");
+                    })
+                    .catch((error) => {
+                        clearTimeout(timeoutHandle);
+                        showError(error.message);
+                    });
+            } catch (error) {
+                clearTimeout(timeoutHandle);
+                showError("Exception: " + error.message);
+            }
+        }
+    </script>
+    <title>Tron Designer Integration - Error Handling Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Error Handling & Validation</h3>
+    <p>Demonstrates proper error handling techniques for TronDesigner integration, including validation, error recovery, and user feedback.</p>
+    <p><strong>Best Practices:</strong></p>
+    <ul>
+        <li>Pre-flight validation of configuration parameters</li>
+        <li>Try-catch blocks for synchronous errors</li>
+        <li>Promise catch handlers for async errors</li>
+        <li>User-friendly error messages</li>
+        <li>Logging for debugging</li>
+        <li>Graceful degradation and retry logic</li>
+    </ul>
+</div>
+
+<div id="error-box" class="error-display"></div>
+<div id="success-box" class="success-display"></div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Invalid Product Code</h4>
+            <button class="btn" onclick="td_open_invalid_product()">
+                Test Invalid Product
+                <br>
+                <small>Should show error</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Invalid Print Configuration</h4>
+            <button class="btn" onclick="td_open_invalid_printing()">
+                Test Invalid Printing
+                <br>
+                <small>Invalid position/tech</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Invalid Print Job GUID</h4>
+            <button class="btn" onclick="td_open_invalid_guid()">
+                Test Invalid GUID
+                <br>
+                <small>Edit non-existent job</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Comprehensive Error Handling</h4>
+            <button class="btn" onclick="td_open_with_error_handling()">
+                Proper Error Handling
+                <br>
+                <small>Best practices example</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Timeout Handling</h4>
+            <button class="btn" onclick="td_open_with_timeout()">
+                Test with Timeout
+                <br>
+                <small>5-second timeout</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Error Handling Patterns</h3>
+
+    <h4>1. Pre-flight Validation</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>if (!productCode || !supplierCode) {
+    showError("Missing required parameters");
+    return;
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">2. Try-Catch for Sync Errors</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>try {
+    td.openDesigner(config, options);
+} catch (error) {
+    console.error("Failed to open:", error);
+    showError(error.message);
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">3. Promise Catch for Async Errors</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.openDesigner(config, options)
+    .then(() => console.log("Success"))
+    .catch((error) => {
+        console.error("Error:", error);
+        showError(error.message);
+    });</code></pre>
+
+    <h4 style="margin-top: 20px;">4. Timeout Handling</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("Timeout")), 5000);
+});
+
+Promise.race([openPromise, timeoutPromise])
+    .then(() => console.log("Success"))
+    .catch((error) => console.error(error));</code></pre>
+</div>
+</body>
+</html>

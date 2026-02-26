@@ -1,0 +1,149 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <script>
+        // View mode demonstrates read-only display of print jobs
+        let printJobGuid = null;
+
+        const td_create_for_view = () => {
+            console.log("Creating print job for viewing...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.subscribeDesignerEvent("printJob", "created", (data) => {
+                printJobGuid = data.detail.printJobGuid;
+                console.log("Print job created with GUID:", printJobGuid);
+                document.getElementById('view-section').style.display = 'block';
+                document.getElementById('guid-display').textContent = printJobGuid;
+            });
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_view_readonly = () => {
+            if (!printJobGuid) {
+                alert("Please create a print job first by clicking 'Create Print Job'");
+                return;
+            }
+
+            console.log("Viewing print job in read-only mode:", printJobGuid);
+            const td = window.tronDesigner;
+
+            td.openDesigner({
+                "openMode": "View",
+                "printJobGuid": printJobGuid
+            }, {mode: "dialog"});
+        }
+
+        const td_view_with_guid = () => {
+            const guid = document.getElementById('manual-guid').value.trim();
+            if (!guid) {
+                alert("Please enter a valid Print Job GUID");
+                return;
+            }
+
+            console.log("Viewing print job with manual GUID:", guid);
+            const td = window.tronDesigner;
+
+            td.openDesigner({
+                "openMode": "View",
+                "printJobGuid": guid
+            }, {mode: "dialog"});
+        }
+    </script>
+    <title>Tron Designer Integration - View Mode Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>View Mode (Read-Only)</h3>
+    <p>View Mode opens the editor in read-only mode. Users can see the design but cannot make changes or save.</p>
+    <p><strong>Use cases:</strong> Order confirmation display, design approval review, customer service viewing, proof verification</p>
+    <p><strong>Features:</strong> No editing tools available, no save/confirm buttons, pure visualization</p>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Step 1: Create Print Job</h4>
+            <button class="btn" onclick="td_create_for_view()">
+                Create Print Job
+                <br>
+                <small>Create a design to view</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example" id="view-section" style="display: none;">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Step 2: View in Read-Only</h4>
+            <p><strong>Print Job GUID:</strong><br><code id="guid-display"></code></p>
+            <button class="btn" onclick="td_view_readonly()">
+                View Design (Read-Only)
+                <br>
+                <small>Open in View Mode</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>View with Manual GUID</h4>
+            <input type="text" id="manual-guid" placeholder="Enter Print Job GUID" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+            <button class="btn" onclick="td_view_with_guid()">
+                View Print Job
+                <br>
+                <small>Use custom GUID</small>
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

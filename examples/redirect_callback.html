@@ -1,0 +1,419 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <style>
+        .callback-log {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            min-height: 100px;
+        }
+        .callback-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+    <script>
+        let callbackLog = [];
+
+        function logCallback(action, data) {
+            const timestamp = new Date().toLocaleTimeString();
+            callbackLog.push({ timestamp, action, data });
+            updateCallbackLog();
+        }
+
+        function updateCallbackLog() {
+            const logContainer = document.getElementById('callback-log');
+            if (!logContainer) return;
+
+            logContainer.innerHTML = callbackLog.map(entry => `
+                <div class="callback-entry">
+                    [${entry.timestamp}] ${entry.action}: ${JSON.stringify(entry.data, null, 2)}
+                </div>
+            `).join('') || '<div style="color: #999;">No callbacks yet...</div>';
+        }
+
+        // Callback function for CALLBACK result action
+        window.onPrintJobComplete = function(data) {
+            logCallback("Print Job Complete", data);
+            alert("Print job completed!\n\nGUID: " + data.printJobGuid + "\n\nCheck the callback log below.");
+            console.log("Print job complete callback data:", data);
+        };
+
+        const td_open_redirect_result = () => {
+            console.log("Opening with REDIRECT result action...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            // Subscribe to created event to capture GUID for redirect
+            td.subscribeDesignerEvent("printJob", "created", (data) => {
+                console.log("Print job created, will redirect after confirmation:", data.printJobGuid);
+            });
+
+            const returnUrl = window.location.origin + "/success.html";
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "result": {
+                        "resultAction": "REDIRECT",
+                        "redirectUrl": returnUrl + "?printJobGuid={printJobGuid}&status=success"
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_callback_result = () => {
+            console.log("Opening with CALLBACK result action...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "result": {
+                        "resultAction": "CALLBACK",
+                        "callbackFunction": "onPrintJobComplete"
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_callback_inline = () => {
+            console.log("Opening with inline callback function...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            // Using subscribeDesignerEvent as alternative to callback result action
+            td.subscribeDesignerEvent("printJob", "created", (data) => {
+                logCallback("Inline Callback - Created", data);
+
+                // Custom logic after print job creation
+                console.log("Executing custom logic...");
+
+                // Could add to cart, update UI, etc.
+                setTimeout(() => {
+                    alert("Custom callback executed!\n\nPrint Job GUID: " + data.printJobGuid);
+                }, 500);
+            });
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "result": {
+                        "resultAction": "CLOSE"
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_redirect_with_data = () => {
+            console.log("Opening with redirect and custom data...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            const orderId = "ORD-" + Math.floor(Math.random() * 10000);
+            const userId = "USR-" + Math.floor(Math.random() * 10000);
+
+            const returnUrl = window.location.origin + "/cart.html";
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    },
+                    "externalUserId": userId,
+                    "externalOrderId": orderId
+                },
+                "editor": {
+                    "result": {
+                        "resultAction": "REDIRECT",
+                        "redirectUrl": returnUrl + "?printJobGuid={printJobGuid}&orderId=" + orderId + "&userId=" + userId
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_combined_actions = () => {
+            console.log("Opening with callback + dialog...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.subscribeDesignerEvent("printJob", "created", (data) => {
+                logCallback("Combined Action - Created", data);
+                console.log("Print job created, showing dialog then executing callback");
+            });
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "result": {
+                        "resultAction": "DIALOG",
+                        "closeDialog": {
+                            "title": "Design Complete!",
+                            "message": "Your design has been saved successfully. Click continue to add to cart.",
+                            "buttonText": "Add to Cart"
+                        }
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+    </script>
+    <title>Tron Designer Integration - Redirect & Callback Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Advanced Result Actions: REDIRECT & CALLBACK</h3>
+    <p>Beyond the basic result actions (NONE, CLOSE, DIALOG), you can redirect users to a custom URL or execute JavaScript callbacks after print job completion.</p>
+    <p><strong>Result Action Types:</strong></p>
+    <ul>
+        <li><code>REDIRECT</code> - Navigate to a custom URL with print job data in query parameters</li>
+        <li><code>CALLBACK</code> - Execute a named JavaScript function with print job data</li>
+        <li><strong>Alternative:</strong> Use <code>subscribeDesignerEvent()</code> for more control over callbacks</li>
+    </ul>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>REDIRECT Result Action</h4>
+            <button class="btn" onclick="td_open_redirect_result()">
+                Open with Redirect
+                <br>
+                <small>Navigate to success page</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>CALLBACK Result Action</h4>
+            <button class="btn" onclick="td_open_callback_result()">
+                Open with Callback
+                <br>
+                <small>Execute JS function</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Event-Based Callback</h4>
+            <button class="btn" onclick="td_open_callback_inline()">
+                Open with Event Handler
+                <br>
+                <small>subscribeDesignerEvent</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Redirect with Custom Data</h4>
+            <button class="btn" onclick="td_open_redirect_with_data()">
+                Open with Data Redirect
+                <br>
+                <small>Pass order & user IDs</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Dialog + Callback</h4>
+            <button class="btn" onclick="td_open_combined_actions()">
+                Open Combined
+                <br>
+                <small>Dialog + Event callback</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 20px;">
+    <h3>Callback Log</h3>
+    <div id="callback-log" class="callback-log">
+        <div style="color: #999;">No callbacks yet...</div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Examples</h3>
+
+    <h4>1. REDIRECT Result Action</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>"editor": {
+    "result": {
+        "resultAction": "REDIRECT",
+        "redirectUrl": "https://yoursite.com/cart?printJobGuid={printJobGuid}"
+    }
+}</code></pre>
+    <p style="font-size: 13px; margin-top: 10px;">
+        The <code>{printJobGuid}</code> placeholder will be replaced with the actual print job GUID.
+    </p>
+
+    <h4 style="margin-top: 20px;">2. CALLBACK Result Action</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>// Define callback function
+window.onPrintJobComplete = function(data) {
+    console.log("Print job completed:", data.printJobGuid);
+    // Add to cart, update UI, etc.
+};
+
+// Configure result action
+"editor": {
+    "result": {
+        "resultAction": "CALLBACK",
+        "callbackFunction": "onPrintJobComplete"
+    }
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">3. Event-Based Approach (Recommended)</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.subscribeDesignerEvent("printJob", "created", (data) => {
+    console.log("Print job created:", data.printJobGuid);
+
+    // Your custom logic here
+    addToCart(data.printJobGuid);
+    showSuccessMessage();
+    updateAnalytics(data);
+});</code></pre>
+
+    <h4 style="margin-top: 20px;">Use Cases</h4>
+    <ul style="line-height: 1.8;">
+        <li><strong>REDIRECT:</strong> E-commerce cart flow, order confirmation pages, thank you pages</li>
+        <li><strong>CALLBACK:</strong> Single-page apps, real-time UI updates, analytics tracking</li>
+        <li><strong>Events:</strong> Complex workflows, multiple actions, conditional logic</li>
+    </ul>
+</div>
+</body>
+</html>

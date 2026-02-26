@@ -1,0 +1,471 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <script>
+        const td_open_custom_appearance = () => {
+            console.log("Opening with custom appearance...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "appearance": {
+                        "primaryColor": "#ff6600",
+                        "logoUrl": "https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg",
+                        "companyName": "My Brand"
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_custom_behavior = () => {
+            console.log("Opening with custom behavior...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "behavior": {
+                        "skipProductSelection": true,
+                        "skipTechnologySelection": true,
+                        "autoSave": true
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_with_restrictions = () => {
+            console.log("Opening with tool restrictions...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "restrictions": {
+                        "disableUpload": false,
+                        "disableText": false,
+                        "disableShapes": false,
+                        "allowedFonts": ["Arial", "Helvetica", "Times New Roman"],
+                        "maxColors": 3
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_with_default_design = () => {
+            console.log("Opening with default design elements...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "defaultDesign": {
+                        "addText": {
+                            "text": "YOUR COMPANY",
+                            "fontFamily": "Arial",
+                            "fontSize": 24,
+                            "color": "#000000"
+                        }
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_with_language = () => {
+            console.log("Opening with custom language...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "appearance": {
+                        "language": "de-DE",
+                        "locale": "de-DE"
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_fully_customized = () => {
+            console.log("Opening with full customization...");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "appearance": {
+                        "primaryColor": "#2563eb",
+                        "logoUrl": "https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg",
+                        "companyName": "Acme Corp",
+                        "language": "en-US"
+                    },
+                    "behavior": {
+                        "skipProductSelection": true,
+                        "skipTechnologySelection": true,
+                        "autoSave": true,
+                        "showGrid": true
+                    },
+                    "restrictions": {
+                        "disableUpload": false,
+                        "disableText": false,
+                        "allowedFileTypes": ["image/png", "image/jpeg"],
+                        "maxFileSize": 5242880
+                    },
+                    "defaultDesign": {
+                        "addText": {
+                            "text": "YOUR LOGO HERE",
+                            "fontFamily": "Arial",
+                            "fontSize": 20,
+                            "color": "#2563eb"
+                        }
+                    },
+                    "result": {
+                        "resultAction": "DIALOG",
+                        "closeDialog": {
+                            "title": "Design Complete!",
+                            "message": "Your custom branded design is ready.",
+                            "buttonText": "Continue"
+                        }
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+    </script>
+    <title>Tron Designer Integration - Editor Customization Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Editor Customization</h3>
+    <p>Customize the TronDesigner editor appearance, behavior, and functionality to match your brand and workflow requirements.</p>
+    <p><strong>Customization Options:</strong></p>
+    <ul>
+        <li><strong>Appearance:</strong> Colors, logo, branding, language</li>
+        <li><strong>Behavior:</strong> Skip steps, auto-save, grid display</li>
+        <li><strong>Restrictions:</strong> Disable features, limit tools, control uploads</li>
+        <li><strong>Default Design:</strong> Pre-populate with text, images, or templates</li>
+    </ul>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Custom Appearance</h4>
+            <button class="btn" onclick="td_open_custom_appearance()">
+                Custom Branding
+                <br>
+                <small>Colors, logo, company name</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Custom Behavior</h4>
+            <button class="btn" onclick="td_open_custom_behavior()">
+                Skip Steps & Auto-Save
+                <br>
+                <small>Direct to editor</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Tool Restrictions</h4>
+            <button class="btn" onclick="td_open_with_restrictions()">
+                Limited Tools
+                <br>
+                <small>Control available features</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Default Design</h4>
+            <button class="btn" onclick="td_open_with_default_design()">
+                Pre-filled Template
+                <br>
+                <small>Start with default text</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Language/Locale</h4>
+            <button class="btn" onclick="td_open_with_language()">
+                German Language
+                <br>
+                <small>Localized interface</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Fully Customized</h4>
+            <button class="btn" onclick="td_open_fully_customized()">
+                All Customizations
+                <br>
+                <small>Complete white-label</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Customization Reference</h3>
+
+    <h4>1. Appearance Options</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>"editor": {
+    "appearance": {
+        "primaryColor": "#ff6600",           // Brand color
+        "logoUrl": "https://...",            // Your logo
+        "companyName": "My Brand",           // Company name
+        "language": "en-US",                 // Language code
+        "locale": "en-US",                   // Locale for formatting
+        "theme": "light"                     // light or dark
+    }
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">2. Behavior Options</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>"editor": {
+    "behavior": {
+        "skipProductSelection": true,        // Skip product picker
+        "skipTechnologySelection": true,     // Skip tech selection
+        "autoSave": true,                    // Enable auto-save
+        "showGrid": true,                    // Display design grid
+        "snapToGrid": true,                  // Enable snap to grid
+        "showRulers": true                   // Show rulers
+    }
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">3. Restriction Options</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>"editor": {
+    "restrictions": {
+        "disableUpload": false,              // Disable image upload
+        "disableText": false,                // Disable text tool
+        "disableShapes": false,              // Disable shapes
+        "allowedFonts": ["Arial", "..."],    // Restrict font list
+        "allowedFileTypes": ["image/png"],   // Limit file types
+        "maxFileSize": 5242880,              // Max file size (bytes)
+        "maxColors": 3,                      // Max colors in design
+        "requireApproval": false             // Require admin approval
+    }
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">4. Default Design Options</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>"editor": {
+    "defaultDesign": {
+        "addText": {
+            "text": "YOUR TEXT",
+            "fontFamily": "Arial",
+            "fontSize": 24,
+            "color": "#000000",
+            "x": 50,                         // X position (%)
+            "y": 50                          // Y position (%)
+        },
+        "addImage": {
+            "imageUrl": "https://...",
+            "x": 50,
+            "y": 50,
+            "width": 100,
+            "height": 100
+        }
+    }
+}</code></pre>
+
+    <h4 style="margin-top: 20px;">Use Cases</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+        <div>
+            <h5>White-Label Solutions</h5>
+            <ul style="font-size: 14px;">
+                <li>Match your brand colors</li>
+                <li>Display your logo</li>
+                <li>Customize messaging</li>
+                <li>Localize language</li>
+            </ul>
+        </div>
+        <div>
+            <h5>Streamlined Workflows</h5>
+            <ul style="font-size: 14px;">
+                <li>Skip unnecessary steps</li>
+                <li>Pre-configure products</li>
+                <li>Auto-save progress</li>
+                <li>Direct to design canvas</li>
+            </ul>
+        </div>
+        <div>
+            <h5>Controlled Design</h5>
+            <ul style="font-size: 14px;">
+                <li>Limit available tools</li>
+                <li>Restrict file types</li>
+                <li>Control color palette</li>
+                <li>Require approvals</li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>
