@@ -144,7 +144,9 @@
             try {
                 td.openDesigner({
                     "openMode": "Edit",
-                    "printJobGuid": "00000000-0000-0000-0000-000000000000"
+                    "printJob": {
+                        "printJobGuid": "00000000-0000-0000-0000-000000000000"
+                    }
                 }, {mode: "dialog"})
                 .catch((error) => {
                     showError("Invalid GUID error: " + (error.message || error));

@@ -11,11 +11,11 @@
             data-td-api-key="{TD_API_KEY}"
     ></script>
     <script>
-        // View mode demonstrates read-only display of print jobs
+        // First, create a print job and save its GUID
         let printJobGuid = null;
 
-        const td_create_for_view = () => {
-            console.log("Creating print job for viewing...");
+        const td_create_initial = () => {
+            console.log("Creating initial print job...");
             const td = window.tronDesigner;
 
             td.setExactProduct('PFC', undefined, (b) => {
@@ -23,10 +23,11 @@
             });
             td.addExactPrinting('front', 'PAD03');
 
+            // Subscribe to print job created event to capture the GUID
             td.subscribeDesignerEvent("printJob", "created", (data) => {
                 printJobGuid = data.detail.printJobGuid;
                 console.log("Print job created with GUID:", printJobGuid);
-                document.getElementById('view-section').style.display = 'block';
+                document.getElementById('edit-section').style.display = 'block';
                 document.getElementById('guid-display').textContent = printJobGuid;
             });
 
@@ -52,38 +53,42 @@
             }, {mode: "dialog"});
         }
 
-        const td_view_readonly = () => {
+        const td_edit_existing = () => {
             if (!printJobGuid) {
                 alert("Please create a print job first by clicking 'Create Print Job'");
                 return;
             }
 
-            console.log("Viewing print job in read-only mode:", printJobGuid);
+            console.log("Editing print job:", printJobGuid);
             const td = window.tronDesigner;
 
             td.openDesigner({
-                "openMode": "View",
-                "printJobGuid": printJobGuid
+                "openMode": "Edit",
+                "printJob": {
+                    "printJobGuid": printJobGuid
+                }
             }, {mode: "dialog"});
         }
 
-        const td_view_with_guid = () => {
+        const td_edit_with_guid = () => {
             const guid = document.getElementById('manual-guid').value.trim();
             if (!guid) {
                 alert("Please enter a valid Print Job GUID");
                 return;
             }
 
-            console.log("Viewing print job with manual GUID:", guid);
+            console.log("Editing print job with manual GUID:", guid);
             const td = window.tronDesigner;
 
             td.openDesigner({
-                "openMode": "View",
-                "printJobGuid": guid
+                "openMode": "Edit",
+                "printJob": {
+                    "printJobGuid": guid
+                }
             }, {mode: "dialog"});
         }
     </script>
-    <title>Tron Designer Integration - View Mode Example</title>
+    <title>Tron Designer Integration - Edit Mode Example</title>
 </head>
 <body>
 <div class="header">
@@ -100,10 +105,9 @@
 </div>
 
 <div class="info-box">
-    <h3>View Mode (Read-Only)</h3>
-    <p>View Mode opens the editor in read-only mode. Users can see the design but cannot make changes or save.</p>
-    <p><strong>Use cases:</strong> Order confirmation display, design approval review, customer service viewing, proof verification</p>
-    <p><strong>Features:</strong> No editing tools available, no save/confirm buttons, pure visualization</p>
+    <h3>Edit Mode</h3>
+    <p>Edit Mode allows you to open and modify existing print jobs. You need the print job GUID to open it in edit mode.</p>
+    <p><strong>Use cases:</strong> E-commerce cart editing, design revision, customer service updates</p>
 </div>
 
 <div class="examples">
@@ -111,23 +115,23 @@
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <h4>Step 1: Create Print Job</h4>
-            <button class="btn" onclick="td_create_for_view()">
+            <button class="btn" onclick="td_create_initial()">
                 Create Print Job
                 <br>
-                <small>Create a design to view</small>
+                <small>Create a new design first</small>
             </button>
         </div>
     </div>
 
-    <div class="example" id="view-section" style="display: none;">
+    <div class="example" id="edit-section" style="display: none;">
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
-            <h4>Step 2: View in Read-Only</h4>
+            <h4>Step 2: Edit Print Job</h4>
             <p><strong>Print Job GUID:</strong><br><code id="guid-display"></code></p>
-            <button class="btn" onclick="td_view_readonly()">
-                View Design (Read-Only)
+            <button class="btn" onclick="td_edit_existing()">
+                Edit Existing Design
                 <br>
-                <small>Open in View Mode</small>
+                <small>Open in Edit Mode</small>
             </button>
         </div>
     </div>
@@ -135,10 +139,10 @@
     <div class="example">
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
-            <h4>View with Manual GUID</h4>
+            <h4>Edit with Manual GUID</h4>
             <input type="text" id="manual-guid" placeholder="Enter Print Job GUID" style="width: 100%; padding: 8px; margin-bottom: 10px;">
-            <button class="btn" onclick="td_view_with_guid()">
-                View Print Job
+            <button class="btn" onclick="td_edit_with_guid()">
+                Edit Print Job
                 <br>
                 <small>Use custom GUID</small>
             </button>
