@@ -13,6 +13,7 @@ function requireEnv(name) {
 
 const TD_URL = requireEnv("TD_URL");
 const TD_API_KEY = requireEnv("TD_API_KEY");
+const TD_URL_INTEGRATION = requireEnv("TD_URL_INTEGRATION");
 
 const root = process.cwd();
 const examplesDir = path.join(root, "examples");
@@ -38,6 +39,7 @@ app.get("/examples/:file", (req, res) => {
     // Replace your placeholders
     html = html
         .replaceAll("{TD_URL}", TD_URL)
+        .replaceAll("{TD_URL_INTEGRATION}", TD_URL_INTEGRATION)
         .replaceAll("{TD_API_KEY}", TD_API_KEY);
 
     res.type("html").send(html);

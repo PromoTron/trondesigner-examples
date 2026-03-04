@@ -1,0 +1,14 @@
+services:
+  trondesigner-examples:
+    build:
+      context: ../../src
+      dockerfile: Dockerfile
+    image: trondesigner-examples:latest
+    container_name: trondesigner-examples
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      TD_URL: ${TD_URL}
+      TD_URL_INTEGRATION: ${TD_URL_INTEGRATION}
+      TD_API_KEY: ${TD_API_KEY}

@@ -1,0 +1,269 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTronDesignerReady"
+    ></script>
+    <style>
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .event-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .event-time {
+            color: #858585;
+            font-size: 11px;
+        }
+
+        .event-type {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+
+        .event-action {
+            color: #dcdcaa;
+        }
+
+        .event-data {
+            color: #ce9178;
+            margin-left: 20px;
+            font-size: 12px;
+        }
+
+        .clear-log {
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        let eventLog = [];
+        let printJobGuid = null;
+
+        function onTronDesignerReady() {
+            logEvent("Script", "Initialized", "TronDesigner API is ready");
+            const td = window.tronDesigner;
+
+            // Subscribe to all available events
+            td.subscribeDesignerEvent("printJob", "created", onPrintJobCreated);
+            td.subscribeDesignerEvent("printJob", "updated", logEventData);
+            td.subscribeDesignerEvent("logo", "created", logEventData);
+            td.subscribeDesignerEvent("logo", "updated", logEventData);
+            td.subscribeDesignerEvent("logo", "deleted", logEventData);
+            td.subscribeDesignerEvent("text", "created", logEventData);
+            td.subscribeDesignerEvent("text", "updated", logEventData);
+            td.subscribeDesignerEvent("proofreading", "created", logEventData);
+            td.subscribeDesignerEvent("proofreading", "updated", logEventData);
+
+
+            logEvent("Events", "Subscribed", "All event listeners registered");
+        }
+
+        function onPrintJobCreated(data) {
+            printJobGuid = data.entityGuid;
+            logEvent("PrintJob", "Created", `GUID: ${data.entityGuid}`, data);
+            document.getElementById('edit-section').style.display = 'block';
+            document.getElementById('guid-display').textContent = data.entityGuid;
+        }
+
+        function logEventData(data) {
+            logEvent(data.entityType, data.eventType, `GUID: ${data.entityGuid}`, data.detail);
+        }
+
+        function logEvent(type, action, message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            eventLog.push({
+                timestamp,
+                type,
+                action,
+                message,
+                data
+            });
+            updateEventLog();
+        }
+
+        function updateEventLog() {
+            const logContainer = document.getElementById('event-log');
+            if (!logContainer) return;
+
+            logContainer.innerHTML = eventLog.map(event => `
+                <div class="event-entry">
+                    <span class="event-time">[${event.timestamp}]</span>
+                    <span class="event-type">${event.type}</span>.<span class="event-action">${event.action}</span>
+                    - ${event.message}
+                    ${event.data ? `<div class="event-data">${JSON.stringify(event.data, null, 2)}</div>` : ''}
+                </div>
+            `).join('');
+
+            // Auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            eventLog = [];
+            updateEventLog();
+        }
+
+        const td_create_new = () => {
+            logEvent("Action", "Create", "Opening designer in Create mode");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_edit_existing = () => {
+            if (!printJobGuid) {
+                alert("Please create a print job first");
+                return;
+            }
+            logEvent("Action", "Edit", `Opening designer in Edit mode for ${printJobGuid}`);
+            const td = window.tronDesigner;
+
+            td.openDesigner({
+                "openMode": "Edit",
+                "printJobGuid": printJobGuid
+            }, {mode: "dialog"});
+        }
+    </script>
+    <title>Tron Designer Integration - Event Handling Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
+                Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Event Handling & Callbacks</h3>
+    <p>TronDesigner provides comprehensive event callbacks to track editor lifecycle and print job changes.</p>
+    <p><strong>Available Events:</strong></p>
+    <ul>
+        <li><code>printJob.created</code> - New print job created</li>
+        <li><code>printJob.updated</code> - Existing print job modified</li>
+        <li><code>printJob.deleted</code> - Print job removed</li>
+        <li><code>editor.opened</code> - Editor interface opened</li>
+        <li><code>editor.closed</code> - Editor interface closed</li>
+    </ul>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
+             alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Create New Print Job</h4>
+            <button class="btn" onclick="td_create_new()">
+                Create Print Job
+                <br>
+                <small>Watch events fire!</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example" id="edit-section" style="display: none;">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
+             alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Edit Print Job</h4>
+            <p><strong>GUID:</strong> <code id="guid-display"></code></p>
+            <button class="btn" onclick="td_edit_existing()">
+                Edit Design
+                <br>
+                <small>Triggers update events</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Event Log</h3>
+        <button class="btn clear-log" onclick="clearLog()">Clear Log</button>
+    </div>
+    <div id="event-log" class="event-log">
+        <div style="color: #858585; text-align: center; padding: 50px;">
+            Waiting for events...
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>// Subscribe to events
+const td = window.tronDesigner;
+
+td.subscribeDesignerEvent("printJob", "created", (data) => {
+    console.log("Print job created:", data.printJobGuid);
+});
+
+td.subscribeDesignerEvent("printJob", "updated", (data) => {
+    console.log("Print job updated:", data.printJobGuid);
+});
+
+td.subscribeDesignerEvent("printJob", "deleted", (data) => {
+    console.log("Print job deleted:", data.printJobGuid);
+});
+
+td.subscribeDesignerEvent("editor", "opened", (data) => {
+    console.log("Editor opened");
+});
+
+td.subscribeDesignerEvent("editor", "closed", (data) => {
+    console.log("Editor closed");
+});</code></pre>
+</div>
+</body>
+</html>

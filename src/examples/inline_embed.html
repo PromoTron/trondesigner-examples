@@ -1,0 +1,193 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <style>
+        #editor-container {
+            width: 100%;
+            height: 800px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+        }
+        #editor-container.active {
+            background-color: #fff;
+            border-color: #0066cc;
+        }
+        .container-info {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+        }
+        .control-panel {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <script>
+        const td_open_inline = () => {
+            console.log("Opening designer in inline mode...");
+            const td = window.tronDesigner;
+            const container = document.getElementById('editor-container');
+
+            container.classList.add('active');
+            container.innerHTML = '';
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                },
+                "editor": {
+                    "result": {
+                        "resultAction": "CLOSE"
+                    }
+                }
+            }, {
+                mode: "container",
+                container: container
+            });
+        }
+
+        const td_open_inline_partial = () => {
+            console.log("Opening designer in inline mode (partial)...");
+            const td = window.tronDesigner;
+            const container = document.getElementById('editor-container');
+
+            container.classList.add('active');
+            container.innerHTML = '';
+
+            td.setPartialProduct('PFC', '10086');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Partial",
+                "printJob": {
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [],
+                        "model": {
+                            "modelCode": "100860"
+                        }
+                    }
+                }
+            }, {
+                mode: "container",
+                container: container
+            });
+        }
+
+        const td_clear_container = () => {
+            const container = document.getElementById('editor-container');
+            container.classList.remove('active');
+            container.innerHTML = '<div class="container-info"><h3>Editor Container</h3><p>The editor will appear here when you click one of the buttons above.</p></div>';
+        }
+    </script>
+    <title>Tron Designer Integration - Inline Embed Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Inline Embed Mode</h3>
+    <p>Inline Mode embeds the TronDesigner editor directly into a page element, allowing seamless integration within your page layout.</p>
+    <p><strong>Use cases:</strong> Product detail pages, configurators, seamless design experience, dashboard integrations</p>
+    <p><strong>Configuration:</strong> <code>{mode: "inline", target: "#element-id"}</code></p>
+</div>
+
+<div class="control-panel">
+    <h3>Control Panel</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn" onclick="td_open_inline()" style="flex: 1; min-width: 200px;">
+            Open Inline (Exact)
+            <br>
+            <small>Specific product & printing</small>
+        </button>
+        <button class="btn" onclick="td_open_inline_partial()" style="flex: 1; min-width: 200px;">
+            Open Inline (Partial)
+            <br>
+            <small>User selects variants</small>
+        </button>
+        <button class="btn" onclick="td_clear_container()" style="flex: 1; min-width: 200px;">
+            Clear Container
+            <br>
+            <small>Reset the editor area</small>
+        </button>
+    </div>
+</div>
+
+<div id="editor-container">
+    <div class="container-info">
+        <h3>Editor Container</h3>
+        <p>The editor will appear here when you click one of the buttons above.</p>
+        <p style="font-size: 12px; color: #999; margin-top: 20px;">
+            Container ID: <code>#editor-container</code><br>
+            Size: 100% width × 800px height
+        </p>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Notes</h3>
+    <ul style="line-height: 1.8;">
+        <li>The editor is embedded directly in the <code>#editor-container</code> element</li>
+        <li>No modal overlay or popup window is used</li>
+        <li>You can style the container to match your page design</li>
+        <li>The editor adapts to the container dimensions</li>
+        <li>Multiple inline editors can exist on the same page (different containers)</li>
+        <li>Ideal for product configurators and seamless workflows</li>
+    </ul>
+
+    <h4 style="margin-top: 20px;">Code Example:</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>tronDesigner.openDesigner({
+    "openMode": "Create",
+    "dataMode": "Exact",
+    "printJob": { /* configuration */ }
+}, {
+    mode: "inline",
+    target: "#editor-container"
+});</code></pre>
+</div>
+</body>
+</html>

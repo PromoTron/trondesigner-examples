@@ -1,0 +1,398 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <script>
+        // Simulate tracking IDs (in real app, these come from your system)
+        const currentUserId = "user_" + Math.floor(Math.random() * 10000);
+        const currentOrderId = "order_" + Math.floor(Math.random() * 10000);
+        const currentCartItemId = "item_" + Math.floor(Math.random() * 10000);
+
+        window.onload = () => {
+            document.getElementById('user-id').textContent = currentUserId;
+            document.getElementById('order-id').textContent = currentOrderId;
+            document.getElementById('cart-item-id').textContent = currentCartItemId;
+        }
+
+        const td_open_with_user_tracking = () => {
+            console.log("Opening with user tracking:", currentUserId);
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    },
+                    "customer":{
+                        "customerIdentity": currentUserId,
+                        "customerEmail": currentUserId + "@example.com",
+                        "customerPerson": "User " + currentUserId,
+                        "customerCompany": "Company of " + currentUserId
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_with_order_tracking = () => {
+            console.log("Opening with order tracking:", currentOrderId);
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    },
+                    "customer":{
+                        "orderCode": currentOrderId
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_with_cart_tracking = () => {
+            console.log("Opening with cart item tracking:", currentCartItemId);
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    },
+                    "customer": {
+                        "orderCode": currentOrderId,
+                        "orderItemCode": currentCartItemId,
+                        "orderTitle": "Example Product in Cart"
+                    }
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_with_custom_data = () => {
+            console.log("Opening with custom metadata");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            const customData = {
+                campaignId: "summer2024",
+                source: "email_campaign",
+                variant: "A",
+                priority: "high",
+                referrer: document.referrer || "direct"
+            };
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    },
+                    "customProperties": customData
+                }
+            }, {mode: "dialog"});
+        }
+
+        const td_open_complete_tracking = () => {
+            console.log("Opening with complete tracking data");
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            const customData = {
+                campaignId: "summer2024",
+                source: "product_page",
+                sessionStart: new Date().toISOString(),
+                userSegment: "premium"
+            };
+
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    },
+                    "customer": {
+                        "customerIdentity": currentUserId,
+                        "customerEmail": currentUserId + "@example.com",
+                        "customerPerson": "User " + currentUserId,
+                        "customerCompany": "Company of " + currentUserId,
+                        "orderCode": currentOrderId,
+                        "orderItemCode": currentCartItemId,
+                        "orderTitle": "Example Product in Cart"
+                    },
+                    "customProperties": customData
+                }
+            }, {mode: "dialog"});
+        }
+    </script>
+    <title>Tron Designer Integration - Session Tracking Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Session Tracking & Identifiers</h3>
+    <p>Link print jobs to your application's users, orders, and cart items for seamless e-commerce integration.</p>
+    <p><strong>Available Tracking Fields:</strong></p>
+    <ul>
+        <li><code>externalUserId</code> - Your user identifier (link designs to user accounts)</li>
+        <li><code>externalOrderId</code> - Your order identifier (connect to specific orders)</li>
+        <li><code>externalCartItemId</code> - Shopping cart line item tracking</li>
+        <li><code>customData</code> - Arbitrary JSON metadata for analytics or business logic</li>
+    </ul>
+</div>
+
+<div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+    <h4>Current Session IDs (simulated)</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+        <div>
+            <strong>User ID:</strong><br>
+            <code id="user-id"></code>
+        </div>
+        <div>
+            <strong>Order ID:</strong><br>
+            <code id="order-id"></code>
+        </div>
+        <div>
+            <strong>Cart Item ID:</strong><br>
+            <code id="cart-item-id"></code>
+        </div>
+    </div>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>User Tracking</h4>
+            <button class="btn" onclick="td_open_with_user_tracking()">
+                Open with User ID
+                <br>
+                <small>Track by user only</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Order Tracking</h4>
+            <button class="btn" onclick="td_open_with_order_tracking()">
+                Open with Order ID
+                <br>
+                <small>User + Order tracking</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Cart Item Tracking</h4>
+            <button class="btn" onclick="td_open_with_cart_tracking()">
+                Open with Cart Item ID
+                <br>
+                <small>Full E-commerce tracking</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Custom Metadata</h4>
+            <button class="btn" onclick="td_open_with_custom_data()">
+                Open with Custom Data
+                <br>
+                <small>Analytics & campaign tracking</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Complete Tracking</h4>
+            <button class="btn" onclick="td_open_complete_tracking()">
+                Open with All IDs
+                <br>
+                <small>User + Order + Cart + Custom</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Use Cases</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 15px;">
+        <div>
+            <h4>E-Commerce Integration</h4>
+            <ul style="font-size: 14px;">
+                <li>Link print jobs to cart items</li>
+                <li>Enable "edit from cart" workflow</li>
+                <li>Track designs through checkout</li>
+                <li>Associate with order after purchase</li>
+            </ul>
+        </div>
+        <div>
+            <h4>User Management</h4>
+            <ul style="font-size: 14px;">
+                <li>Display user's past designs</li>
+                <li>Enable design library per user</li>
+                <li>Track user design activity</li>
+                <li>Personalization based on history</li>
+            </ul>
+        </div>
+        <div>
+            <h4>Analytics & Reporting</h4>
+            <ul style="font-size: 14px;">
+                <li>Campaign performance tracking</li>
+                <li>A/B test variant tracking</li>
+                <li>Conversion funnel analysis</li>
+                <li>Custom business metrics</li>
+            </ul>
+        </div>
+    </div>
+
+    <h4 style="margin-top: 30px;">Implementation Code</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.openDesigner({
+    "openMode": "Create",
+    "dataMode": "Exact",
+    "printJob": {
+        "addPrintings": [
+            {
+                "printPositionCode": "front",
+                "printTechnologyCode": "PAD03"
+            }
+        ],
+        "addProducts": {
+            "supplierCode": "PFC",
+            "variants": [
+                {
+                    "productCode": "10086021"
+                }
+            ]
+        },
+        "customer": {
+            "customerIdentity": currentUserId,
+            "customerEmail": currentUserId + "@example.com",
+            "customerPerson": "User " + currentUserId,
+            "customerCompany": "Company of " + currentUserId,
+            "orderCode": currentOrderId,
+            "orderItemCode": currentCartItemId,
+            "orderTitle": "Example Product in Cart"
+        },
+        "customProperties": {
+            campaignId: "summer2024",
+            source: "product_page",
+            sessionStart: "2024-06-01T12:00:00Z",
+            userSegment: "premium"
+        }
+    },
+}, {mode: "dialog"});</code></pre>
+</div>
+</body>
+</html>

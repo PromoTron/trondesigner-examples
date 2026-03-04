@@ -1,0 +1,177 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <title>Tron Designer Integration - URL Integration Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>URL Integration (No JavaScript)</h3>
+    <p>URL Integration allows you to open TronDesigner directly via URL parameters without loading any JavaScript.</p>
+    <p><strong>Use cases:</strong> Email links, QR codes, server-side redirects, simple integrations</p>
+    <p><strong>Benefits:</strong> No JavaScript required, works everywhere, easy to generate server-side</p>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Create Mode - Exact Product</h4>
+            <a class="btn" href="{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&productCodes=10086021&positionCodes=front&technologyCodes=PAD03" target="_blank">
+                Open via URL
+                <br>
+                <small>Direct link to editor</small>
+            </a>
+            <div style="margin-top: 10px; font-size: 12px; word-break: break-all;">
+                <strong>URL:</strong><br>
+                <code>{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&productCodes=10086021&positionCodes=front&technologyCodes=PAD03</code>
+            </div>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml"/>
+        <div class="actions">
+            <h4>Partial Mode - Model Only</h4>
+            <a class="btn" href="{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&modelCode=100860&dataMode=Partial" target="_blank">
+                Open via URL
+                <br>
+                <small>User selects variants</small>
+            </a>
+            <div style="margin-top: 10px; font-size: 12px; word-break: break-all;">
+                <strong>URL:</strong><br>
+                <code>{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&modelCode=100860&dataMode=Partial</code>
+            </div>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Edit Mode - Existing Print Job</h4>
+            <input type="text" id="edit-guid" placeholder="Enter Print Job GUID" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+            <button class="btn" onclick="openEditUrl()">
+                Open Edit URL
+                <br>
+                <small>Edit existing design</small>
+            </button>
+            <div style="margin-top: 10px; font-size: 12px; word-break: break-all;">
+                <strong>URL Format:</strong><br>
+                <code>{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&openMode=Edit&printJobGuid=[GUID]</code>
+            </div>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>View Mode - Read Only</h4>
+            <input type="text" id="view-guid" placeholder="Enter Print Job GUID" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+            <button class="btn" onclick="openViewUrl()">
+                Open View URL
+                <br>
+                <small>View in read-only mode</small>
+            </button>
+            <div style="margin-top: 10px; font-size: 12px; word-break: break-all;">
+                <strong>URL Format:</strong><br>
+                <code>{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&openMode=View&printJobGuid=[GUID]</code>
+            </div>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions" style="text-align: left;">
+            <h4>Common URL Parameters</h4>
+            <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Parameter</strong></td>
+                    <td style="padding: 8px;"><strong>Description</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>apiKey</code></td>
+                    <td style="padding: 8px;">Your API key (required)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>openMode</code></td>
+                    <td style="padding: 8px;">Create, Edit, or View</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>dataMode</code></td>
+                    <td style="padding: 8px;">Exact, Partial, or None</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>supplierCode</code></td>
+                    <td style="padding: 8px;">Supplier identifier</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>modelCode</code></td>
+                    <td style="padding: 8px;">Product model code</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>productCode</code></td>
+                    <td style="padding: 8px;">Specific variant code</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>printPositionCode</code></td>
+                    <td style="padding: 8px;">Print position (e.g., front)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>printTechnologyCode</code></td>
+                    <td style="padding: 8px;">Technology (e.g., PAD03)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>printJobGuid</code></td>
+                    <td style="padding: 8px;">Existing print job ID</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>returnUrl</code></td>
+                    <td style="padding: 8px;">URL to redirect after completion</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>externalUserId</code></td>
+                    <td style="padding: 8px;">Your user identifier</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>externalOrderId</code></td>
+                    <td style="padding: 8px;">Your order identifier</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditUrl() {
+        const guid = document.getElementById('edit-guid').value.trim();
+        if (!guid) {
+            alert("Please enter a Print Job GUID");
+            return;
+        }
+        window.open(`{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&openMode=Edit&printJobGuid=${guid}`, '_blank');
+    }
+
+    function openViewUrl() {
+        const guid = document.getElementById('view-guid').value.trim();
+        if (!guid) {
+            alert("Please enter a Print Job GUID");
+            return;
+        }
+        window.open(`{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&openMode=View&printJobGuid=${guid}`, '_blank');
+    }
+</script>
+</body>
+</html>

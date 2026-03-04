@@ -14,20 +14,12 @@
         const td_open = () => {
             console.log("Opening Tron Designer...");
             const td = window.tronDesigner;
-            td.openDesigner({
-                "openMode": "Create",
-                "dataMode": "Partial",
-                "printJob": {
-                    "addPrintings": [],
-                    "addProducts": {
-                        "supplierCode": "PFC",
-                        "variants": [],
-                        "model": {
-                            "modelCode": "100860"
-                        }
-                    }
-                }
-            }, { mode: "dialog" });
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+            console.log(td.argsBuilder.build())
+            td.openDesigner(td.argsBuilder.build(), { mode: "dialog" });
         }
     </script>
     <title>Tron Designer Integration - JS Builder Basic Example</title>
@@ -46,13 +38,13 @@
     <a href="index.html">Back to examples</a>
 </div>
 <div class="example">
-    <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/0c090d99-b8bf-4dcc-bf6f-119c7907845a" alt="Oregon 400 ml - Blue Cloud"/>
+    <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
     <div class="actions">
-        <h4>JSON - Partial</h4>
+        <h4>Builder - Exact</h4>
         <button class="btn" onclick="td_open()">
             Open Designer
             <br>
-            <small>Oregon 400 ml</small>
+            <small>Oregon 400 ml - Red</small>
         </button>
     </div>
 </div>
