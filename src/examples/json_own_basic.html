@@ -1,0 +1,300 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script async src="{TD_URL}/js/website-integration.js" referrerpolicy="origin" data-td-api="{TD_URL}/api"
+        data-td-api-key="{TD_API_KEY}"></script>
+    <script>
+        const td_open_1variant = () => {
+            console.log("Opening Tron Designer...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Own",
+                "printJob": {
+                    "addPrintings": [],
+                    "addProducts": {
+                        "supplierCode": "MY_SHOP",
+                        "model": {
+                            "modelCode": "MUG-01",
+                            "title": "Custom Ceramic Mug",
+                            "description": "A customized 11oz ceramic mug",
+                            "dimensionsCount": 1,
+                            "isDimension1Color": true
+                        },
+                        "variants": [
+                            {
+                                "productCode": "MUG-01-RED",
+                                "dim1Title": "Color",
+                                "dim1Colors": ["#FF0000"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Red"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, { mode: "dialog" });
+        }
+
+        const td_open_3variants = () => {
+            console.log("Opening Tron Designer...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Own",
+                "printJob": {
+                    "addPrintings": [],
+                    "addProducts": {
+                        "supplierCode": "MY_SHOP",
+                        "model": {
+                            "modelCode": "MUG-01",
+                            "title": "Custom Ceramic Mug",
+                            "description": "A customized 11oz ceramic mug",
+                            "dimensionsCount": 1,
+                            "isDimension1Color": true
+                        },
+                        "variants": [
+                            {
+                                "productCode": "MUG-01-RED",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#FF0000"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Red",
+                                    "productCode": "MUG-01-RED"
+                                }
+                            },
+                            {
+                                "productCode": "MUG-01-WHITE",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#FFFFFF"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - White",
+                                    "productCode": "MUG-01-WHITE"
+                                }
+                            },
+                            {
+                                "productCode": "MUG-01-BLUE",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#0000FF"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Blue",
+                                    "productCode": "MUG-01-BLUE"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, { mode: "dialog" });
+        }
+
+        const td_open_3variants_with_printings = () => {
+            console.log("Opening Tron Designer...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Own",
+                "printJob": {
+                    "addProducts": {
+                        "supplierCode": "MY_SHOP",
+                        "model": {
+                            "modelCode": "MUG-01",
+                            "title": "Custom Ceramic Mug",
+                            "description": "A customized 11oz ceramic mug",
+                            "dimensionsCount": 1,
+                            "isDimension1Color": true
+                        },
+                        "variants": [
+                            {
+                                "productCode": "MUG-01-RED",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#FF0000"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Red",
+                                    "productCode": "MUG-01-RED"
+                                }
+                            },
+                            {
+                                "productCode": "MUG-01-WHITE",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#FFFFFF"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - White",
+                                    "productCode": "MUG-01-WHITE"
+                                }
+                            },
+                            {
+                                "productCode": "MUG-01-BLUE",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#0000FF"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Blue",
+                                    "productCode": "MUG-01-BLUE"
+                                }
+                            }
+                        ]
+                    },
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03",
+                            "colorMode": "Pantone",
+                            "maxColors": 3,
+                            "maxHeight": 50,
+                            "maxWidth": 50,
+                            "overrides": {
+                                "printPositionName": "Front",
+                                "printTechnologyName": "Padprint",
+                            }
+                        }
+                    ]
+                }
+            }, { mode: "dialog" });
+        }
+
+        const td_open_3variants_with_printings_mockup = () => {
+            console.log("Opening Tron Designer...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Own",
+                "printJob": {
+                    "addProducts": {
+                        "supplierCode": "MY_SHOP",
+                        "model": {
+                            "modelCode": "MUG-01",
+                            "title": "Custom Ceramic Mug",
+                            "description": "A customized 11oz ceramic mug",
+                            "dimensionsCount": 1,
+                            "isDimension1Color": true
+                        },
+                        "variants": [
+                            {
+                                "productCode": "MUG-01-RED",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#FF0000"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Red",
+                                    "productCode": "MUG-01-RED"
+                                }
+                            },
+                            {
+                                "productCode": "MUG-01-WHITE",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#FFFFFF"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - White",
+                                    "productCode": "MUG-01-WHITE"
+                                }
+                            },
+                            {
+                                "productCode": "MUG-01-BLUE",
+                                "dimension1Title": "Color",
+                                "dimension1Colors": ["#0000FF"],
+                                "overrides": {
+                                    "productName": "Ceramic Mug - Blue",
+                                    "productCode": "MUG-01-BLUE"
+                                }
+                            }
+                        ]
+                    },
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03",
+                            "colorMode": "Pantone",
+                            "maxColors": 3,
+                            "maxHeight": 50,
+                            "maxWidth": 50,
+                            "ownBackgroundUrls": [
+                                "https://troncloudprod.blob.core.windows.net/provider-images/cdf553d1-545e-4bd4-9a6c-006ab133102d?20251230T035622",
+                                "https://troncloudprod.blob.core.windows.net/provider-images/7ca81c8b-22ed-4ca6-9d41-60469b7c26bb?20251230T035616",
+                                "https://troncloudprod.blob.core.windows.net/provider-images/25934d27-8ee3-4e48-8519-8b2a56f261c0?20251230T035619"
+                            ],
+                            "overrides": {
+                                "printPositionName": "Front",
+                                "printTechnologyName": "Padprint",
+                            }
+                        }
+                    ]
+                }
+            }, { mode: "dialog" });
+        }
+
+    </script>
+    <title>Tron Designer Integration - JSON Own (Custom) Data Example</title>
+</head>
+
+<body>
+    <div class="header">
+        <div><a href="https://www.trondesigner.com"><img
+                    src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a>
+        </div>
+        <h1>
+            <span>TronDesigner</span> - Integration Examples<br>
+            <small>Docs:
+                <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios"
+                    target="_blank">Scenarios</a> &nbsp;|&nbsp;
+                <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic"
+                    target="_blank">Modes</a> &nbsp;|&nbsp;
+                <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide"
+                    target="_blank">Developer Guide</a>
+            </small>
+        </h1>
+        <a href="index.html">Back to examples</a>
+    </div>
+    <div class="examples">
+        <div class="example">
+            <img src="https://troncloudprod.blob.core.windows.net/provider-images/993adc10-4ce5-43f3-9027-bafcbcbb6a03?20261230T170910"
+                alt="Custom Ceramic Mug" />
+            <div class="actions">
+                <h4>Own Product - 1 Variant</h4>
+                <button class="btn" onclick="td_open_1variant()">
+                    Custom Ceramic Mug
+                    <br>
+                    <small>1 Variant</small>
+                </button>
+            </div>
+        </div>
+        <div class="example">
+            <img src="https://troncloudprod.blob.core.windows.net/provider-images/993adc10-4ce5-43f3-9027-bafcbcbb6a03?20261230T170910"
+                alt="Custom Ceramic Mug" />
+            <div class="actions">
+                <h4>Own Product - 3 Variants</h4>
+                <button class="btn" onclick="td_open_3variants()">
+                    Custom Ceramic Mug
+                    <br>
+                    <small>3 Variants</small>
+                </button>
+            </div>
+        </div>
+        <div class="example">
+            <img src="https://troncloudprod.blob.core.windows.net/provider-images/993adc10-4ce5-43f3-9027-bafcbcbb6a03?20261230T170910"
+                alt="Custom Ceramic Mug" />
+            <div class="actions">
+                <h4>Own Product - 3 Variants with Printings</h4>
+                <button class="btn" onclick="td_open_3variants_with_printings()">
+                    Custom Ceramic Mug
+                    <br>
+                    <small>3 Variants with Printings</small>
+                </button>
+            </div>
+        </div>
+        <div class="example">
+            <img src="https://troncloudprod.blob.core.windows.net/provider-images/993adc10-4ce5-43f3-9027-bafcbcbb6a03?20261230T170910"
+                alt="Custom Ceramic Mug" />
+            <div class="actions">
+                <h4>Own Product - 3 Variants with Printings and Mockup</h4>
+                <button class="btn" onclick="td_open_3variants_with_printings_mockup()">
+                    Custom Ceramic Mug
+                    <br>
+                    <small>3 Variants with Printings and Mockup</small>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

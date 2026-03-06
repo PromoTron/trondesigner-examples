@@ -1,95 +1,103 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/assets/style.css">
-    <script
-            async
-            src="{TD_URL}/js/website-integration.js"
-            referrerpolicy="origin"
-            data-td-api="{TD_URL}/api"
-            data-td-api-key="{TD_API_KEY}"
-    ></script>
+    <script async src="{TD_URL}/js/website-integration.js" referrerpolicy="origin" data-td-api="{TD_URL}/api"
+        data-td-api-key="{TD_API_KEY}"></script>
     <title>Tron Designer Integration - Examples</title>
 </head>
+
 <body>
-<div class="header">
-    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
-    <h1>
-        <span>TronDesigner</span> - Integration Examples<br>
-        <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
-        </small>
-    </h1>
-    <a href="index.html">All examples</a>
-</div>
-<div class="examples">
-    <div class="example">
-        <h2><a href="quick_start.html">Quick Start</a></h2>
-        <div>Auto-opens the designer on page load using exact data.</div>
+    <div class="header">
+        <div><a href="https://www.trondesigner.com"><img
+                    src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a>
+        </div>
+        <h1>
+            <span>TronDesigner</span> - Integration Examples<br>
+            <small>Docs:
+                <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios"
+                    target="_blank">Scenarios</a> &nbsp;|&nbsp;
+                <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic"
+                    target="_blank">Modes</a> &nbsp;|&nbsp;
+                <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide"
+                    target="_blank">Developer Guide</a>
+            </small>
+        </h1>
+        <a href="index.html">All examples</a>
     </div>
-    <div class="example">
-        <h2><a href="attributes_exact_basic.html">Attributes - Exact</a></h2>
-        <div>Opens using data attributes on a button.</div>
+    <div class="examples">
+        <div class="example">
+            <h2><a href="quick_start.html">Quick Start</a></h2>
+            <div>Auto-opens the designer on page load using exact data.</div>
+        </div>
+        <div class="example">
+            <h2><a href="attributes_exact_basic.html">Attributes - Exact</a></h2>
+            <div>Opens using data attributes on a button.</div>
+        </div>
+        <div class="example">
+            <h2><a href="builder_exect_basic.html">Builder - Exact</a></h2>
+            <div>Uses the JS args builder for an exact product + printing.</div>
+        </div>
+        <div class="example">
+            <h2><a href="builder_partial_basic.html">Builder - Partial</a></h2>
+            <div>Starts with a model; user picks variants and printings.</div>
+        </div>
+        <div class="example">
+            <h2><a href="json_exect_basic.html">JSON - Exact</a></h2>
+            <div>Opens with a full explicit JSON payload.</div>
+        </div>
+        <div class="example">
+            <h2><a href="json_partial_basic.html">JSON - Partial</a></h2>
+            <div>Opens with a minimal JSON payload (model only).</div>
+        </div>
+        <div class="example">
+            <h2><a href="json_own_basic.html">JSON - Own Product</a></h2>
+            <div>Opens using custom product data (Own schema) instead of PromoTron catalog.</div>
+        </div>
+        <div class="example">
+            <h2><a href="get_images.html">Get Images</a></h2>
+            <div>Retrieves motive area + visualization images after creation.</div>
+        </div>
+        <div class="example">
+            <h2><a href="result_action.html">Result Action</a></h2>
+            <div>Shows possible result action configurations, which determine what happens when the print graphics is
+                confirmed.</div>
+        </div>
+        <div class="example">
+            <h2><a href="edit_mode.html">Edit Mode</a></h2>
+            <div>Open and modify existing print jobs using their GUID.</div>
+        </div>
+        <div class="example">
+            <h2><a href="view_mode.html">View Mode</a></h2>
+            <div>Display print jobs in read-only mode for review and confirmation.</div>
+        </div>
+        <div class="example">
+            <h2><a href="url_integration.html">URL Integration</a></h2>
+            <div>Direct URL integration without JavaScript - perfect for emails and QR codes.</div>
+        </div>
+        <div class="example">
+            <h2><a href="inline_embed.html">Inline Embed</a></h2>
+            <div>Embed the editor directly into a page element for seamless integration.</div>
+        </div>
+        <div class="example">
+            <h2><a href="events_full.html">Event Handling</a></h2>
+            <div>Comprehensive event callbacks for tracking editor lifecycle and print job changes.</div>
+        </div>
+        <div class="example">
+            <h2><a href="session_tracking.html">Session Tracking</a></h2>
+            <div>Link print jobs to users, orders, and cart items for e-commerce integration.</div>
+        </div>
+        <div class="example">
+            <h2><a href="error_handling.html">Error Handling</a></h2>
+            <div>Proper error handling, validation, and recovery patterns.</div>
+        </div>
+        <div class="example">
+            <h2><a href="multiple_printings.html">Multiple Printings</a></h2>
+            <div>Configure multiple print positions and technologies in a single print job.</div>
+        </div>
     </div>
-    <div class="example">
-        <h2><a href="builder_exect_basic.html">Builder - Exact</a></h2>
-        <div>Uses the JS args builder for an exact product + printing.</div>
-    </div>
-    <div class="example">
-        <h2><a href="builder_partial_basic.html">Builder - Partial</a></h2>
-        <div>Starts with a model; user picks variants and printings.</div>
-    </div>
-    <div class="example">
-        <h2><a href="json_exect_basic.html">JSON - Exact</a></h2>
-        <div>Opens with a full explicit JSON payload.</div>
-    </div>
-    <div class="example">
-        <h2><a href="json_partial_basic.html">JSON - Partial</a></h2>
-        <div>Opens with a minimal JSON payload (model only).</div>
-    </div>
-    <div class="example">
-        <h2><a href="get_images.html">Get Images</a></h2>
-        <div>Retrieves motive area + visualization images after creation.</div>
-    </div>
-    <div class="example">
-        <h2><a href="result_action.html">Result Action</a></h2>
-        <div>Shows possible result action configurations, which determine what happens when the print graphics is confirmed.</div>
-    </div>
-    <div class="example">
-        <h2><a href="edit_mode.html">Edit Mode</a></h2>
-        <div>Open and modify existing print jobs using their GUID.</div>
-    </div>
-    <div class="example">
-        <h2><a href="view_mode.html">View Mode</a></h2>
-        <div>Display print jobs in read-only mode for review and confirmation.</div>
-    </div>
-    <div class="example">
-        <h2><a href="url_integration.html">URL Integration</a></h2>
-        <div>Direct URL integration without JavaScript - perfect for emails and QR codes.</div>
-    </div>
-    <div class="example">
-        <h2><a href="inline_embed.html">Inline Embed</a></h2>
-        <div>Embed the editor directly into a page element for seamless integration.</div>
-    </div>
-    <div class="example">
-        <h2><a href="events_full.html">Event Handling</a></h2>
-        <div>Comprehensive event callbacks for tracking editor lifecycle and print job changes.</div>
-    </div>
-    <div class="example">
-        <h2><a href="session_tracking.html">Session Tracking</a></h2>
-        <div>Link print jobs to users, orders, and cart items for e-commerce integration.</div>
-    </div>
-    <div class="example">
-        <h2><a href="error_handling.html">Error Handling</a></h2>
-        <div>Proper error handling, validation, and recovery patterns.</div>
-    </div>
-    <div class="example">
-        <h2><a href="multiple_printings.html">Multiple Printings</a></h2>
-        <div>Configure multiple print positions and technologies in a single print job.</div>
-    </div>
-</div>
 </body>
+
 </html>
