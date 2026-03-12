@@ -1,0 +1,103 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTronDesignerReady"
+    ></script>
+    <script>
+
+        const td_create_new = () => {
+            const td = window.tronDesigner;
+
+            td.setExactProduct('TD', undefined, (b) => {
+                b.addVariant('10086001_TD');
+                b.addVariant('10086055_TD');
+            });
+            td.addExactPrinting('front', 'PAD03');
+
+            td.open({mode: "dialog"});
+        }
+    </script>
+    <script>
+        const EDITOR_SELECTOR = "trondesigner-editor";
+
+        function injectStyle(editorEl) {
+            const sr = editorEl.shadowRoot;
+            if (!sr) return;
+
+            if (sr.querySelector("style[data-host-patch='1']")) return;
+
+            const style = document.createElement("style");
+            style.dataset.hostPatch = "1";
+            style.textContent = `
+                #TDMainFooterControls button.btn-secondary {
+                  display: none !important;
+                }
+              `;
+            sr.appendChild(style);
+        }
+
+        const observer = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                    if (!(node instanceof Element)) continue;
+
+                    if (node.matches(EDITOR_SELECTOR)) {
+                        injectStyle(node);
+                    }
+
+                    node.querySelectorAll?.(EDITOR_SELECTOR).forEach(injectStyle);
+                }
+            }
+        });
+
+        observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+        });
+
+        obs.observe(document.documentElement, { childList: true, subtree: true });
+    </script>
+    <title>Tron Designer Integration - Event Handling Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
+                Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
+             alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Create New Print Job</h4>
+            <button class="btn" onclick="td_create_new()">
+                Create Print Job
+                <br>
+                <small>Patched style to hide 'Proofreading' button in editor footer</small>
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
