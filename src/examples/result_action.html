@@ -54,12 +54,15 @@
 
         const td_open_result_dialog = () => {
             td_open({
-                resultAction: "DIALOG",
-                closeDialog: {
-                    title: "Print Graphics ready",
-                    message: "Print Graphics has been successfully created and saved.",
-                    buttonText: "Continue to cart"
-                }
+                resultAction: 'Dialog',
+                closeDialog: [
+                    {
+                        title: 'Print Graphics ready',
+                        language: 'en',
+                        message: 'Print Graphics has been successfully created and saved.',
+                        buttonText: 'Continue to cart',
+                    },
+                ],
             });
         }
     </script>
