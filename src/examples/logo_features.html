@@ -1,0 +1,271 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTronDesignerReady"
+    ></script>
+    <script>
+        let currentLogo = null;
+
+        const onTronDesignerReady = () => {
+            console.log("TronDesigner is ready!");
+            const td = window.tronDesigner;
+            if (td) {
+                // Listen for logo selected events
+                td.subscribeDesignerEvent('logo', 'selected', (event) => {
+                    console.log('Logo selected:', event);
+                    if (event.entityGuid) {
+                        currentLogo = event.entityGuid;
+                        updateLogoDisplay(`Logo selected: ${event.entityGuid}`);
+                    } else {
+                        currentLogo = null;
+                        updateLogoDisplay('No logo selected');
+                    }
+                });
+            } else {
+                console.error("TronDesigner API not found!");
+            }
+        };
+
+        const updateLogoDisplay = (text) => {
+            const display = document.getElementById('logo-status');
+            if (display) {
+                display.textContent = text;
+            }
+        };
+
+        // Open logo upload dialog
+        const openUpload = () => {
+            console.log("Opening logo upload...");
+            const td = window.tronDesigner;
+            td.setOpenMode("OpenUpload");
+            td.open({mode: "dialog"});
+        };
+
+        // Open logo gallery dialog
+        const openGallery = () => {
+            console.log("Opening logo gallery...");
+            const td = window.tronDesigner;
+            td.setOpenMode("OpenGallery");
+            td.open({mode: "dialog"});
+        };
+
+        // Set logo programmatically
+        const setLogo = () => {
+            if (!currentLogo) {
+                console.warn("No logo selected to set!");
+                return;
+            }
+
+            console.log("Setting logo:", currentLogo);
+            const td = window.tronDesigner;
+            td.setLogo(currentLogo
+                .then(() => {
+                    console.log("Logo set successfully!");
+                })
+                .catch((error) => {
+                    console.error("Error setting logo:", error);
+                }));
+        };
+
+        // Get current logo
+        const getLogo = () => {
+            const td = window.tronDesigner;
+            td.getLogo()
+                .then((logo) => {
+                    console.log("Current logo:", logo);
+                    updateLogoDisplay(`Current logo: ${logo}`);
+                })
+        };
+
+        // Clear logo
+        const clearLogo = () => {
+            console.log("Clearing logo...");
+            const td = window.tronDesigner;
+            td.clearLogo()
+                .then(() => {
+                    console.log("Logo cleared successfully!");
+                    updateLogoDisplay('No logo selected');
+                })
+                .catch((error) => {
+                    console.error("Error clearing logo:", error);
+                });
+        };
+
+        // Open designer with logo preselected via GUID
+        const openWithLogoGuid = () => {
+            console.log("Opening with preselected logo (GUID)...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "logo": {
+                        "guid": "610c6f2d-bd71-419c-a335-b305c3af7e5f"
+                    },
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                }
+            }, {mode: "dialog"});
+        };
+
+        // Open designer with logo preselected via URL
+        const openWithLogoUrl = () => {
+            console.log("Opening with preselected logo (URL)...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "logo": {
+                        "url": "https://www.promotron.com/assets/img/trondesigner/logo.svg"
+                    },
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03"
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                }
+            }, {mode: "dialog"});
+        };
+
+        // Open designer with different logos per printing
+        const openWithMultipleLogos = () => {
+            console.log("Opening with multiple logos per printing...");
+            const td = window.tronDesigner;
+            td.openDesigner({
+                "openMode": "Create",
+                "dataMode": "Exact",
+                "printJob": {
+                    "addPrintings": [
+                        {
+                            "printPositionCode": "front",
+                            "printTechnologyCode": "PAD03",
+                            "logo": {
+                                "url": "https://www.promotron.com/assets/img/trondesigner/logo.svg"
+                            },
+                        },
+                        {
+                            "printPositionCode": "wrap",
+                            "printTechnologyCode": "LASR03",
+                            "logo": {
+                                "url": "https://www.promotron.com/assets/img/tronmanager/logo.png"
+                            },
+                        }
+                    ],
+                    "addProducts": {
+                        "supplierCode": "PFC",
+                        "variants": [
+                            {
+                                "productCode": "10086021"
+                            }
+                        ]
+                    }
+                }
+            }, {mode: "dialog"});
+        };
+    </script>
+    <title>Tron Designer Integration - Logo Features Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
+                Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+<div class="example">
+    <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
+         alt="Oregon 400 ml - Red"/>
+    <div class="actions">
+        <h4>Logo Features</h4>
+
+        <p id="logo-status" style="margin: 10px 0; font-weight: bold;">No logo selected</p>
+
+        <h5 style="margin-top: 20px; margin-bottom: 10px;">Logo Dialog Actions</h5>
+        <button class="btn" onclick="openUpload()">
+            Open Upload Dialog
+            <br>
+            <small>Opens logo upload tab</small>
+        </button>
+        <button class="btn" onclick="openGallery()">
+            Open Gallery Dialog
+            <br>
+            <small>Opens logo gallery tab</small>
+        </button>
+
+        <h5 style="margin-top: 20px; margin-bottom: 10px;">Logo Management</h5>
+        <button class="btn" onclick="setLogo()">
+            Set Logo
+            <br>
+            <small>Set specific logo by GUID</small>
+        </button>
+        <button class="btn" onclick="getLogo()">
+            Get Logo
+            <br>
+            <small>Get current logo GUID</small>
+        </button>
+        <button class="btn" onclick="clearLogo()">
+            Clear Logo
+            <br>
+            <small>Remove selected logo</small>
+        </button>
+
+        <h5 style="margin-top: 20px; margin-bottom: 10px;">Preselect Logo Examples</h5>
+        <button class="btn" onclick="openWithLogoGuid()">
+            Open with Logo (GUID)
+            <br>
+            <small>Preselect logo by GUID</small>
+        </button>
+        <button class="btn" onclick="openWithLogoUrl()">
+            Open with Logo (URL)
+            <br>
+            <small>Preselect logo by URL</small>
+        </button>
+        <button class="btn" onclick="openWithMultipleLogos()">
+            Open with Multiple Logos
+            <br>
+            <small>Different logos per printing</small>
+        </button>
+    </div>
+</div>
+</body>
+</html>
