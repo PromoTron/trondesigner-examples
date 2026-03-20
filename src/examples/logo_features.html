@@ -14,7 +14,7 @@
     <script>
         let currentLogo = null;
 
-        const onTronDesignerReady = () => {
+        function onTronDesignerReady() {
             console.log("TronDesigner is ready!");
             const td = window.tronDesigner;
             if (td) {
@@ -32,7 +32,7 @@
             } else {
                 console.error("TronDesigner API not found!");
             }
-        };
+        }
 
         const updateLogoDisplay = (text) => {
             const display = document.getElementById('logo-status');
