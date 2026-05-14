@@ -88,8 +88,8 @@
         }
 
         function onScriptInitFailed(error) {
-            console.error('Script initialization failed:', error);
-            const message = error && error.message ? error.message : String(error);
+            console.error('Script initialization failed cause:', error);
+            const message = error && error.cause ? error.cause : String(error);
             document.getElementById('error-message').textContent = message;
             document.getElementById('error-overlay').classList.add('visible');
         }
