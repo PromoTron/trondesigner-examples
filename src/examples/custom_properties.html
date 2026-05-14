@@ -1,0 +1,328 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTdReady"
+            data-td-print-job-created-callback="onPrintJobCreated"
+    ></script>
+    <style>
+        .approach-label {
+            display: inline-block;
+            background: #0066cc;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .event-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .event-time { color: #858585; font-size: 11px; }
+        .event-type { color: #4ec9b0; font-weight: bold; }
+        .event-action { color: #dcdcaa; }
+
+        .event-data {
+            color: #ce9178;
+            margin-left: 20px;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .custom-props-result {
+            background: #0d2b0d;
+            border: 1px solid #2d7a2d;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-top: 30px;
+        }
+
+        .custom-props-result h4 {
+            color: #4ec94e;
+            margin: 0 0 10px;
+        }
+
+        .custom-props-result pre {
+            background: #1a3a1a;
+            color: #7ed17e;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .clear-log { margin-top: 10px; }
+    </style>
+    <script>
+        function onTdReady() {
+            logEvent("Script", "Initialized", "TronDesigner API is ready");
+        }
+
+        function onPrintJobCreated(event) {
+            logEvent("PrintJob", "Created", `GUID: ${event && event.entityGuid}`, event);
+
+            // customProperties echo back in event.detail.customProperties
+            const customProps = event && event.detail && event.detail.customProperties;
+
+            const resultEl = document.getElementById('custom-props-result');
+            resultEl.style.display = 'block';
+
+            if (customProps) {
+                document.getElementById('custom-props-json').textContent = JSON.stringify(customProps, null, 2);
+            } else {
+                document.getElementById('custom-props-json').textContent =
+                    '(no customProperties found — check browser console for full event object)';
+                console.log('Full printJob.created event:', event);
+            }
+        }
+
+        function openWithBuilder() {
+            const td = window.tronDesigner;
+            td.setExactProduct('PFC', undefined, (b) => {
+                b.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+            const args = td.argsBuilder.build();
+            args.printJob.customProperties = {
+                source: 'js-builder',
+                cartLineId: 'CL-' + Math.floor(Math.random() * 9000 + 1000),
+                campaign: 'SPRING24'
+            };
+            td.openDesigner(args, { mode: 'dialog' });
+        }
+
+        function openWithPrintJobArgs() {
+            window.tronDesigner.openDesigner({
+                openMode: 'Create',
+                dataMode: 'Exact',
+                printJob: {
+                    addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }],
+                    addProducts: {
+                        supplierCode: 'PFC',
+                        variants: [{ productCode: '10086021' }]
+                    },
+                    customProperties: {
+                        source: 'printjob-args',
+                        cartLineId: 'CL-' + Math.floor(Math.random() * 9000 + 1000),
+                        campaign: 'SPRING24'
+                    }
+                }
+            }, { mode: 'dialog' });
+        }
+
+        let eventLog = [];
+
+        function logEvent(type, action, message, data = null) {
+            eventLog.push({ timestamp: new Date().toLocaleTimeString(), type, action, message, data });
+            updateEventLog();
+        }
+
+        function updateEventLog() {
+            const logContainer = document.getElementById('event-log');
+            if (!logContainer) return;
+            logContainer.innerHTML = eventLog.map(e => `
+                <div class="event-entry">
+                    <span class="event-time">[${e.timestamp}]</span>
+                    <span class="event-type">${e.type}</span>.<span class="event-action">${e.action}</span>
+                    ${e.message ? '- ' + e.message : ''}
+                    ${e.data !== null && e.data !== undefined
+                        ? `<div class="event-data">${typeof e.data === 'string' ? e.data : JSON.stringify(e.data, null, 2)}</div>`
+                        : ''}
+                </div>
+            `).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            eventLog = [];
+            updateEventLog();
+            document.getElementById('custom-props-result').style.display = 'none';
+        }
+    </script>
+    <title>Tron Designer Integration - Custom Properties Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/1763253-session-tracking-and-identifiers" target="_blank">Custom Properties</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Custom Properties</h3>
+    <p>Custom properties are arbitrary key/value metadata you attach to a print job. TronDesigner stores them unchanged and echoes them back in every callback and webhook — letting your backend correlate completed designs with cart lines, campaigns, or any internal context.</p>
+    <p>The same <code>customProperties</code> object can be passed in three ways. All three produce identical behaviour; pick the one that fits your integration style:</p>
+    <ul>
+        <li><strong>HTML data attribute</strong> — <code>data-td-custom-properties</code> JSON string on the action button</li>
+        <li><strong>JS builder</strong> — mutate the object returned by <code>argsBuilder.build()</code> before passing it to <code>openDesigner()</code></li>
+        <li><strong>Print job arguments</strong> — nest <code>customProperties</code> directly inside the <code>printJob</code> argument of <code>openDesigner()</code></li>
+    </ul>
+    <p>After you finish a design, the <code>printJob.created</code> callback fires. The custom properties you sent are highlighted in green below the event log.</p>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">HTML Attribute</span>
+            <h4>data-td-custom-properties</h4>
+            <button
+                    class="btn"
+                    data-td-action="OpenCreate"
+                    data-td-supplier-code="PFC"
+                    data-td-product-code="10086021"
+                    data-td-print-position-code="front"
+                    data-td-print-technology-code="PAD03"
+                    data-td-custom-properties='{"source":"html-attr","campaign":"SPRING24","region":"EU"}'>
+                Open Designer
+                <br>
+                <small>Oregon 400 ml - Red</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">JS Builder</span>
+            <h4>argsBuilder.build() + inject</h4>
+            <button class="btn" onclick="openWithBuilder()">
+                Open Designer
+                <br>
+                <small>Oregon 400 ml - Red</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">Print Job Args</span>
+            <h4>openDesigner({ printJob: { customProperties } })</h4>
+            <button class="btn" onclick="openWithPrintJobArgs()">
+                Open Designer
+                <br>
+                <small>Oregon 400 ml - Red</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="custom-props-result" class="custom-props-result" style="display: none;">
+    <h4>customProperties echoed back in printJob.created event</h4>
+    <pre id="custom-props-json"></pre>
+</div>
+
+<div style="margin-top: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Event Log</h3>
+        <button class="btn clear-log" onclick="clearLog()">Clear Log</button>
+    </div>
+    <div id="event-log" class="event-log">
+        <div style="color: #858585; text-align: center; padding: 50px;">
+            Waiting for events...
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+
+    <h4>1 — HTML data attribute</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;button
+    data-td-action="OpenCreate"
+    data-td-supplier-code="PFC"
+    data-td-product-code="10086021"
+    data-td-print-position-code="front"
+    data-td-print-technology-code="PAD03"
+    data-td-custom-properties='{"source":"html-attr","campaign":"SPRING24","region":"EU"}'&gt;
+    Open Designer
+&lt;/button&gt;</code></pre>
+
+    <h4 style="margin-top: 20px;">2 — JS builder</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
+td.setExactProduct('PFC', undefined, (b) =&gt; { b.addVariant('10086021'); });
+td.addExactPrinting('front', 'PAD03');
+
+const args = td.argsBuilder.build();
+args.printJob.customProperties = {
+    source: 'js-builder',
+    cartLineId: 'CL-1234',
+    campaign: 'SPRING24'
+};
+
+td.openDesigner(args, { mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">3 — Print job arguments</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
+    openMode: 'Create',
+    dataMode: 'Exact',
+    printJob: {
+        addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }],
+        addProducts: {
+            supplierCode: 'PFC',
+            variants: [{ productCode: '10086021' }]
+        },
+        customProperties: {
+            source: 'printjob-args',
+            cartLineId: 'CL-1234',
+            campaign: 'SPRING24'
+        }
+    }
+}, { mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">Receiving custom properties in the created callback</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;!-- Wire the callback via script-element attribute --&gt;
+&lt;script
+    async
+    src="{TD_URL}/js/website-integration.js"
+    data-td-api="{TD_URL}/api"
+    data-td-api-key="{TD_API_KEY}"
+    data-td-print-job-created-callback="onPrintJobCreated"&gt;
+&lt;/script&gt;
+
+&lt;script&gt;
+function onPrintJobCreated(event) {
+    // event.entityGuid  — the new print job GUID
+    // event.detail.customProperties  — your metadata echoed back unchanged
+    const customProps = event.detail.customProperties;
+    console.log('Custom properties received:', customProps);
+}
+&lt;/script&gt;</code></pre>
+</div>
+</body>
+</html>
