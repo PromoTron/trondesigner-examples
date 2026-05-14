@@ -1,0 +1,196 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="INVALID_KEY_TO_TRIGGER_FAILURE"
+            data-td-script-initialized-callback="onScriptInitialized"
+            data-td-script-init-failed-callback="onScriptInitFailed"
+    ></script>
+    <style>
+        .notification-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-overlay.visible {
+            display: flex;
+        }
+
+        .notification-popup {
+            background: #fff;
+            border-radius: 10px;
+            padding: 32px 36px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+            text-align: center;
+        }
+
+        .notification-popup .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .notification-popup h2 {
+            margin: 0 0 10px;
+            color: #c0392b;
+            font-size: 20px;
+        }
+
+        .notification-popup p {
+            margin: 0 0 20px;
+            color: #444;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .notification-popup code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .notification-popup .close-btn {
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 28px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .notification-popup .close-btn:hover {
+            background: #a93226;
+        }
+
+        .designer-btn-wrapper {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+    </style>
+    <script>
+        function onScriptInitialized() {
+            // Success path — nothing extra to do in this example.
+        }
+
+        function onScriptInitFailed(error) {
+            console.error('Script initialization failed:', error);
+            const message = error && error.message ? error.message : String(error);
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-overlay').classList.add('visible');
+        }
+
+        function closeNotification() {
+            document.getElementById('error-overlay').classList.remove('visible');
+        }
+    </script>
+    <title>Tron Designer Integration - Init Failure Handling</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Init Failure Handling</h3>
+    <p>This example intentionally uses an invalid API key (<code>INVALID_KEY_TO_TRIGGER_FAILURE</code>) so that the SDK raises a <code>scriptInitFailed</code> event on load.</p>
+    <p>The <code>data-td-script-init-failed-callback</code> attribute points at <code>onScriptInitFailed</code>, which displays a modal popup with the error message. The designer button is shown as disabled to make it clear the integration is unavailable.</p>
+    <p><strong>Callback attributes used here:</strong></p>
+    <ul>
+        <li><code>data-td-script-initialized-callback</code></li>
+        <li><code>data-td-script-init-failed-callback</code></li>
+    </ul>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Open Designer (will fail — invalid key)</h4>
+            <div class="designer-btn-wrapper">
+                <button
+                        class="btn"
+                        data-td-action="OpenCreate"
+                        data-td-supplier-code="PFC"
+                        data-td-product-code="10086021"
+                        data-td-print-position-code="front"
+                        data-td-print-technology-code="PAD03">
+                    Open Designer
+                    <br>
+                    <small>Oregon 400 ml - Red</small>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error notification popup -->
+<div id="error-overlay" class="notification-overlay" role="dialog" aria-modal="true" aria-labelledby="error-title">
+    <div class="notification-popup">
+        <div class="icon">&#9888;&#65039;</div>
+        <h2 id="error-title">Initialization Failed</h2>
+        <p>The TronDesigner SDK could not initialize. Please check your API key and try again.</p>
+        <p><code id="error-message"></code></p>
+        <button class="close-btn" onclick="closeNotification()">Dismiss</button>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;!-- Use a wrong key to force the failure callback --&gt;
+&lt;script
+    async
+    src="{TD_URL}/js/website-integration.js"
+    data-td-api="{TD_URL}/api"
+    data-td-api-key="INVALID_KEY_TO_TRIGGER_FAILURE"
+    data-td-script-initialized-callback="onScriptInitialized"
+    data-td-script-init-failed-callback="onScriptInitFailed"&gt;
+&lt;/script&gt;
+
+&lt;script&gt;
+    function onScriptInitFailed(error) {
+        const message = error &amp;&amp; error.message ? error.message : String(error);
+        document.getElementById('error-message').textContent = message;
+        document.getElementById('error-overlay').classList.add('visible');
+    }
+
+    function closeNotification() {
+        document.getElementById('error-overlay').classList.remove('visible');
+    }
+&lt;/script&gt;
+
+&lt;!-- Modal popup, hidden until init fails --&gt;
+&lt;div id="error-overlay" class="notification-overlay"&gt;
+    &lt;div class="notification-popup"&gt;
+        &lt;h2&gt;Initialization Failed&lt;/h2&gt;
+        &lt;p&gt;The TronDesigner SDK could not initialize.&lt;/p&gt;
+        &lt;p&gt;&lt;code id="error-message"&gt;&lt;/code&gt;&lt;/p&gt;
+        &lt;button onclick="closeNotification()"&gt;Dismiss&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onScriptInitialized"
+            data-td-script-init-failed-callback="onScriptInitFailed"
+            data-td-print-job-created-callback="onPrintJobCreated"
+            data-td-print-job-updated-callback="onPrintJobUpdated"
+            data-td-logo-created-callback="onLogoCreated"
+            data-td-logo-updated-callback="onLogoUpdated"
+            data-td-logo-deleted-callback="onLogoDeleted"
+            data-td-text-created-callback="onTextCreated"
+            data-td-proofreading-created-callback="onProofreadingCreated"
+    ></script>
+    <style>
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .event-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .event-time {
+            color: #858585;
+            font-size: 11px;
+        }
+
+        .event-type {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+
+        .event-action {
+            color: #dcdcaa;
+        }
+
+        .event-data {
+            color: #ce9178;
+            margin-left: 20px;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+
+        .clear-log {
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        let eventLog = [];
+
+        function onScriptInitialized() {
+            logEvent("Script", "Initialized", "TronDesigner script ready (no JS subscriptions needed — callbacks wired via data-* attributes)");
+        }
+
+        function onScriptInitFailed(error) {
+            logEvent("Script", "InitFailed", String(error && error.message ? error.message : error), error);
+        }
+
+        function onPrintJobCreated(event) {
+            logEntityEvent(event, "PrintJob", "Created");
+
+            // Capture the print job GUID and wire up the Edit button — entirely via attributes.
+            // We update `data-td-print-job-guid` on a button that already has `data-td-action="OpenEdit"`,
+            // then call refreshRegisteredElements() so the integration script binds the click handler.
+            const guid = event && event.entityGuid;
+            if (!guid) return;
+
+            const editBtn = document.getElementById('edit-btn');
+            editBtn.setAttribute('data-td-print-job-guid', guid);
+            document.getElementById('guid-display').textContent = guid;
+            document.getElementById('edit-section').style.display = '';
+
+            if (window.tronDesigner && typeof window.tronDesigner.refreshRegisteredElements === 'function') {
+                window.tronDesigner.refreshRegisteredElements();
+                logEvent("Action", "EditWired", `Edit button bound for GUID ${guid}`);
+            }
+        }
+
+        function onPrintJobUpdated(event) {
+            logEntityEvent(event, "PrintJob", "Updated");
+        }
+
+        function onLogoCreated(event) {
+            logEntityEvent(event, "Logo", "Created");
+        }
+
+        function onLogoUpdated(event) {
+            logEntityEvent(event, "Logo", "Updated");
+        }
+
+        function onLogoDeleted(event) {
+            logEntityEvent(event, "Logo", "Deleted");
+        }
+
+        function onTextCreated(event) {
+            logEntityEvent(event, "Text", "Created");
+        }
+
+        function onProofreadingCreated(event) {
+            const detail = event && event.detail;
+            const summary = detail instanceof Blob
+                ? `Blob (${detail.type || "application/pdf"}, ${detail.size} bytes)`
+                : detail;
+            logEvent("Proofreading", "Created", `GUID: ${event && event.entityGuid}`, summary);
+        }
+
+        function logEntityEvent(event, type, action) {
+            const guid = event && event.entityGuid;
+            logEvent(type, action, guid ? `GUID: ${guid}` : "", event && event.detail);
+        }
+
+        function logEvent(type, action, message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            eventLog.push({ timestamp, type, action, message, data });
+            console.log(`[${timestamp}] ${type}.${action}`, message, data);
+            updateEventLog();
+        }
+
+        function updateEventLog() {
+            const logContainer = document.getElementById('event-log');
+            if (!logContainer) return;
+
+            logContainer.innerHTML = eventLog.map(event => `
+                <div class="event-entry">
+                    <span class="event-time">[${event.timestamp}]</span>
+                    <span class="event-type">${event.type}</span>.<span class="event-action">${event.action}</span>
+                    ${event.message ? '- ' + event.message : ''}
+                    ${event.data !== null && event.data !== undefined
+                        ? `<div class="event-data">${typeof event.data === 'string' ? event.data : JSON.stringify(event.data, null, 2)}</div>`
+                        : ''}
+                </div>
+            `).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            eventLog = [];
+            updateEventLog();
+        }
+    </script>
+    <title>Tron Designer Integration - Attributes Overview Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Attributes - Overview</h3>
+    <p>This example wires up the integration entirely through HTML <code>data-*</code> attributes — no JavaScript event subscription calls.</p>
+    <p>The action buttons use <code>data-td-action</code> + product/printing/print-job attributes to open the designer. The script element uses <code>data-td-*-callback</code> attributes to point at globally available functions for every event.</p>
+    <p><strong>Flow:</strong> click <em>Step 1</em> to create, finish in the editor, the <code>printJob.created</code> callback fires; we copy the GUID into the Step 2 button's <code>data-td-print-job-guid</code> and call <code>tronDesigner.refreshRegisteredElements()</code> so the SDK binds its click handler. Step 2 then opens the same job in <code>OpenEdit</code> mode — purely via attributes.</p>
+    <p><strong>Script-element callback attributes used here:</strong></p>
+    <ul>
+        <li><code>data-td-script-initialized-callback</code></li>
+        <li><code>data-td-script-init-failed-callback</code></li>
+        <li><code>data-td-print-job-created-callback</code></li>
+        <li><code>data-td-print-job-updated-callback</code></li>
+        <li><code>data-td-logo-created-callback</code> / <code>-updated-callback</code> / <code>-deleted-callback</code></li>
+        <li><code>data-td-text-created-callback</code></li>
+        <li><code>data-td-proofreading-created-callback</code></li>
+    </ul>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Step 1: Create — Attributes (Exact)</h4>
+            <button
+                    class="btn"
+                    data-td-action="OpenCreate"
+                    data-td-supplier-code="PFC"
+                    data-td-product-code="10086021"
+                    data-td-print-position-code="front"
+                    data-td-print-technology-code="PAD03">
+                Open Designer
+                <br>
+                <small>Oregon 400 ml - Red</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example" id="edit-section" style="display: none;">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <h4>Step 2: Edit — Attributes (OpenEdit)</h4>
+            <p><strong>Print Job GUID:</strong><br><code id="guid-display"></code></p>
+            <button
+                    id="edit-btn"
+                    class="btn"
+                    data-td-action="OpenEdit">
+                Edit Existing Design
+                <br>
+                <small>Opens via data-td-print-job-guid</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Event Log</h3>
+        <button class="btn clear-log" onclick="clearLog()">Clear Log</button>
+    </div>
+    <div id="event-log" class="event-log">
+        <div style="color: #858585; text-align: center; padding: 50px;">
+            Waiting for events...
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;!-- Wire every callback through script-element data attributes --&gt;
+&lt;script
+    async
+    src="{TD_URL}/js/website-integration.js"
+    data-td-api="{TD_URL}/api"
+    data-td-api-key="{TD_API_KEY}"
+    data-td-script-initialized-callback="onScriptInitialized"
+    data-td-script-init-failed-callback="onScriptInitFailed"
+    data-td-print-job-created-callback="onPrintJobCreated"
+    data-td-print-job-updated-callback="onPrintJobUpdated"
+    data-td-logo-created-callback="onLogoCreated"
+    data-td-logo-updated-callback="onLogoUpdated"
+    data-td-logo-deleted-callback="onLogoDeleted"
+    data-td-text-created-callback="onTextCreated"
+    data-td-proofreading-created-callback="onProofreadingCreated"&gt;
+&lt;/script&gt;
+
+&lt;!-- Step 1: open in Create mode, also via attributes --&gt;
+&lt;button
+    data-td-action="OpenCreate"
+    data-td-supplier-code="PFC"
+    data-td-product-code="10086021"
+    data-td-print-position-code="front"
+    data-td-print-technology-code="PAD03"&gt;
+    Open Designer
+&lt;/button&gt;
+
+&lt;!-- Step 2: edit button, GUID injected at runtime by the created-callback --&gt;
+&lt;button id="edit-btn" data-td-action="OpenEdit"&gt;
+    Edit Existing Design
+&lt;/button&gt;
+
+&lt;script&gt;
+    // The argument is a DesignerEntityEvent with { entityType, eventType, entityGuid, detail }.
+    function onPrintJobCreated(event) {
+        const editBtn = document.getElementById('edit-btn');
+        editBtn.setAttribute('data-td-print-job-guid', event.entityGuid);
+        // Element was skipped at init (no GUID yet), so re-run discovery to bind its click.
+        window.tronDesigner.refreshRegisteredElements();
+    }
+&lt;/script&gt;</code></pre>
+</div>
+</body>
+</html>
