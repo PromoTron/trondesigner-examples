@@ -1,0 +1,230 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTronDesignerReady"
+    ></script>
+    <style>
+        .vis-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 15px 20px;
+            background: #f8f8f8;
+            border-bottom: solid 1px #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .vis-controls .btn {
+            width: auto;
+            padding: 8px 18px;
+        }
+
+        .logo-status {
+            font-size: 13px;
+            color: #606060;
+            margin-left: auto;
+        }
+
+        .logo-status span {
+            font-weight: bold;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .product-card {
+            margin: 10px;
+            border: solid 1px #e0e0e0;
+            border-radius: 5px;
+            background: #fdfdfd;
+            padding: 15px;
+            text-align: center;
+            width: 270px;
+        }
+
+        .product-card img {
+            width: 240px;
+            height: 240px;
+            object-fit: contain;
+            border: solid 1px #e8e8e8;
+            border-radius: 4px;
+            background: #fafafa;
+            display: block;
+            margin: 0 auto 12px auto;
+            transition: opacity 0.2s;
+        }
+
+        .product-card img[src=""] {
+            background: #f0f0f0;
+        }
+
+        .product-code {
+            font-size: 13px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .product-meta {
+            font-size: 12px;
+            color: #888;
+            line-height: 18px;
+        }
+
+        .product-meta b {
+            color: #555;
+        }
+    </style>
+    <script>
+        function onTronDesignerReady() {
+            window.tronDesigner.subscribeDesignerEvent('logo', 'selected', (event) => {
+                updateLogoStatus(event.detail?.logoGuid ?? null);
+            });
+        }
+
+        function updateLogoStatus(logoGuid) {
+            const el = document.getElementById('logo-guid');
+            el.textContent = logoGuid ? logoGuid : 'none';
+        }
+
+        function openGallery() {
+            window.tronDesigner.openLogoGallery({ mode: 'dialog' });
+        }
+
+        function openUpload() {
+            window.tronDesigner.openLogoUpload({ mode: 'dialog' });
+        }
+
+        function clearLogo() {
+            window.tronDesigner.clearLogo().then(() => updateLogoStatus(null));
+        }
+    </script>
+    <title>Tron Designer Integration - Render Visualization</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="vis-controls">
+    <button class="btn" onclick="openGallery()">
+        Open Gallery
+        <br><small>Select a logo</small>
+    </button>
+    <button class="btn" onclick="openUpload()">
+        Open Upload
+        <br><small>Upload a logo</small>
+    </button>
+    <button class="btn" onclick="clearLogo()">
+        Clear Logo
+        <br><small>Reset all images</small>
+    </button>
+    <div class="logo-status">
+        Active logo: <span id="logo-guid">none</span>
+    </div>
+</div>
+
+<div class="products">
+
+    <div class="product-card">
+        <img
+            data-td-action="RenderVisualization"
+            data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+            data-td-product-code="10601301_TD"
+            data-td-print-position-code="front"
+            data-td-print-technology-code="TRA01"
+            data-td-visualization-size="max300"
+            src="https://placehold.co/400x400/f0f0f0/aaaaaa?text=10601301_TD"
+            alt="10601301_TD"
+        />
+        <div class="product-code">10601301_TD</div>
+        <div class="product-meta">
+            <b>Position:</b> front<br>
+            <b>Technology:</b> TRA01
+        </div>
+    </div>
+
+    <div class="product-card">
+        <img
+            data-td-action="RenderVisualization"
+            data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+            data-td-product-code="10086055_TD"
+            data-td-print-position-code="wrap"
+            data-td-print-technology-code="LASR02"
+            data-td-visualization-size="max300"
+            src="https://placehold.co/400x400/f0f0f0/aaaaaa?text=10086055_TD"
+            alt="10086055_TD"
+        />
+        <div class="product-code">10086055_TD</div>
+        <div class="product-meta">
+            <b>Position:</b> wrap<br>
+            <b>Technology:</b> LASR02
+        </div>
+    </div>
+
+    <div class="product-card">
+        <img
+            data-td-action="RenderVisualization"
+            data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+            data-td-product-code="10601355_TD"
+            data-td-print-position-code="front"
+            data-td-print-technology-code="TRA01"
+            data-td-visualization-size="max300"
+            src="https://placehold.co/400x400/f0f0f0/aaaaaa?text=10601355_TD"
+            alt="10601355_TD"
+        />
+        <div class="product-code">10601355_TD</div>
+        <div class="product-meta">
+            <b>Position:</b> front<br>
+            <b>Technology:</b> TRA01
+        </div>
+    </div>
+
+    <div class="product-card">
+        <img
+            data-td-action="RenderVisualization"
+            data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+            data-td-product-code="10601390_TD"
+            data-td-print-position-code="front"
+            data-td-print-technology-code="DEB01"
+            data-td-visualization-size="max300"
+            src="https://placehold.co/400x400/f0f0f0/aaaaaa?text=10601390_TD"
+            alt="10601390_TD"
+        />
+        <div class="product-code">10601390_TD</div>
+        <div class="product-meta">
+            <b>Position:</b> front<br>
+            <b>Technology:</b> DEB01
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
