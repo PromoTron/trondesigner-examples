@@ -1,0 +1,155 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <script>
+        const customButtons = [
+            {
+                style: 'Secondary',
+                function: 'DownloadPreviewImage',
+                labels: [
+                    {language: 'en', text: 'Download preview'},
+                    {language: 'de', text: 'Vorschau herunterladen'},
+                    {language: 'cs', text: 'Stáhnout náhled'},
+                ],
+            },
+            {
+                style: 'Secondary',
+                function: 'Save',
+                labels: [
+                    {language: 'en', text: 'Save progress'},
+                    {language: 'de', text: 'Fortschritt speichern'},
+                    {language: 'cs', text: 'Uložit průběh'},
+                ],
+            },
+            {
+                style: 'Primary',
+                function: 'FinalConfirm',
+                labels: [
+                    {language: 'en', text: 'Confirm design'},
+                    {language: 'de', text: 'Design bestätigen'},
+                    {language: 'cs', text: 'Potvrdit návrh'},
+                ],
+            },
+        ];
+
+        const td_open = (buttonCount) => {
+            window.tronDesigner.openDesigner({
+                openMode: 'Create',
+                dataMode: 'Exact',
+                printJob: {
+                    addPrintings: [
+                        {
+                            printPositionCode: 'front',
+                            printTechnologyCode: 'PAD03',
+                        },
+                    ],
+                    addProducts: {
+                        supplierCode: 'PFC',
+                        variants: [{productCode: '10086021'}],
+                    },
+                },
+                editor: {
+                    buttons: customButtons.slice(-buttonCount),
+                },
+            }, {mode: 'dialog'});
+        };
+
+        const td_open_with_builder = () => {
+            const td = window.tronDesigner;
+
+            td.setExactProduct('PFC', undefined, (product) => {
+                product.addVariant('10086021');
+            });
+            td.addExactPrinting('front', 'PAD03');
+            td.addEditorButton({
+                style: 'Secondary',
+                function: 'DownloadPreviewImage',
+                labels: [
+                    {language: 'en', text: 'Download preview'},
+                    {language: 'de', text: 'Vorschau herunterladen'},
+                    {language: 'cs', text: 'Stáhnout náhled'},
+                ],
+            });
+            td.addEditorButton({
+                style: 'Secondary',
+                function: 'Save',
+                labels: [
+                    {language: 'en', text: 'Save progress'},
+                    {language: 'de', text: 'Fortschritt speichern'},
+                    {language: 'cs', text: 'Uložit průběh'},
+                ],
+            });
+            td.addEditorButton({
+                style: 'Primary',
+                function: 'FinalConfirm',
+                labels: [
+                    {language: 'en', text: 'Confirm design'},
+                    {language: 'de', text: 'Design bestätigen'},
+                    {language: 'cs', text: 'Potvrdit návrh'},
+                ],
+            });
+            td.open({mode: 'dialog'});
+        };
+    </script>
+    <title>Tron Designer Integration - Custom Editor Buttons Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red">
+        <div class="actions">
+            <h4>One custom button</h4>
+            <button class="btn" onclick="td_open(1)">
+                Open Designer
+                <br>
+                <small>Confirm design</small>
+            </button>
+        </div>
+    </div>
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red">
+        <div class="actions">
+            <h4>Two custom buttons</h4>
+            <button class="btn" onclick="td_open(2)">
+                Open Designer
+                <br>
+                <small>Confirm design + Save progress</small>
+            </button>
+        </div>
+    </div>
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red">
+        <div class="actions">
+            <h4>Three custom buttons</h4>
+            <button class="btn" onclick="td_open_with_builder()">
+                Open Designer
+                <br>
+                <small>Builder API: Confirm + Save + Download preview</small>
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
