@@ -1,0 +1,301 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTronDesignerReady"
+    ></script>
+    <style>
+        .viz-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .viz-tile {
+            width: 200px;
+            border: solid 1px #e0e0e0;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .viz-tile img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            border: solid 1px #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .viz-tile .caption {
+            margin-top: 8px;
+            font-size: 13px;
+            line-height: 18px;
+        }
+
+        .viz-tile .caption code {
+            font-size: 11px;
+            color: #888;
+        }
+
+        h4.section-title {
+            width: 100%;
+            margin: 30px 0 10px 0;
+        }
+    </style>
+    <script>
+        let currentLogoGuid = null;
+
+        function onTronDesignerReady() {
+            console.log("TronDesigner is ready!");
+            const td = window.tronDesigner;
+            if (!td) {
+                console.error("TronDesigner API not found!");
+                return;
+            }
+
+            // The visualization manager (which drives all [data-td-action="RenderVisualization"]
+            // images below) re-renders automatically whenever the customer's logo changes -
+            // no extra wiring needed here beyond reflecting the current state in the UI.
+            td.subscribeDesignerEvent('logo', 'selected', (event) => {
+                console.log('Logo selected:', event);
+                currentLogoGuid = event.entityGuid || null;
+                updateLogoStatus();
+            });
+        }
+
+        const updateLogoStatus = () => {
+            const el = document.getElementById('logo-status');
+            if (!el) return;
+            el.textContent = currentLogoGuid
+                ? `Logo selected: ${currentLogoGuid}`
+                : 'No logo selected — visualization images below show the original product photo.';
+        };
+
+        // Open logo upload dialog
+        const openUpload = () => {
+            console.log("Opening logo upload...");
+            const td = window.tronDesigner;
+            td.setOpenMode("OpenUpload");
+            td.open({mode: "dialog"});
+        };
+
+        // Open logo gallery dialog (select an existing logo)
+        const openGallery = () => {
+            console.log("Opening logo gallery...");
+            const td = window.tronDesigner;
+            td.setOpenMode("OpenGallery");
+            td.open({mode: "dialog"});
+        };
+
+        // Clear logo - visualization images fall back to their original src
+        const clearLogo = () => {
+            console.log("Clearing logo...");
+            const td = window.tronDesigner;
+            td.clearLogo()
+                .then(() => {
+                    console.log("Logo cleared successfully!");
+                    currentLogoGuid = null;
+                    updateLogoStatus();
+                })
+                .catch((error) => {
+                    console.error("Error clearing logo:", error);
+                });
+        };
+    </script>
+    <title>Tron Designer Integration - Logo Visualization Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img
+            src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> - Integration Examples<br>
+        <small>Docs:
+            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
+            &nbsp;|&nbsp;
+            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
+                Guide</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Logo Visualization</h3>
+    <p>Instead of a JS button opening the editor, plain <code>&lt;img data-td-action="RenderVisualization"&gt;</code>
+        elements are scanned automatically on page load. Each one declares a supplier + exact product variant + print
+        position/technology; the script batches these into render token requests and swaps <code>src</code> for the
+        rendered visualization of the customer's currently selected logo.</p>
+    <p>Product used: <strong>Teak A5 recycled hard cover notebook</strong> (<code>106013_TD</code>).</p>
+    <ul>
+        <li>No logo selected → images show their original <code>src</code> (the plain product photo).</li>
+        <li>Upload or select a logo below → every matching image re-renders automatically.</li>
+        <li>Clear the logo → images reset to their original <code>src</code>.</li>
+        <li>Each variant/position/technology combination requires its own <code>&lt;img&gt;</code> - one image can
+            only ever represent one exact print option on one exact variant.</li>
+    </ul>
+</div>
+
+<div class="examples">
+    <div class="example">
+        <div class="actions" style="width: auto;">
+            <h4>Logo Upload / Select / Clear</h4>
+
+            <p id="logo-status" style="margin: 10px 0; font-weight: bold;">No logo selected — visualization images
+                below show the original product photo.</p>
+
+            <button class="btn" onclick="openUpload()">
+                Open Upload Dialog
+                <br>
+                <small>Upload a new logo</small>
+            </button>
+            <button class="btn" onclick="openGallery()">
+                Open Gallery Dialog
+                <br>
+                <small>Select an existing logo</small>
+            </button>
+            <button class="btn" onclick="clearLogo()">
+                Clear Logo
+                <br>
+                <small>Reset all visualizations below</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<h4 class="section-title">Visualization by Variant Code - 3 Variants</h4>
+<p>Same print option (<code>FRONT</code> / <code>DPRINT03</code>, digital print) rendered on three different
+    color variants.</p>
+<div class="viz-grid">
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601355_TD"
+                src="https://cdn.tc.promotron.com/web-images/d4ff18d9-903e-4c69-8bcd-f6c6f1e0d1b9"
+                alt="Teak A5 notebook - Navy"/>
+        <div class="caption">Navy<br><code>10601355_TD</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601331_TD"
+                src="https://cdn.tc.promotron.com/web-images/c66caba2-ba55-4621-9874-414428e55fe4"
+                alt="Teak A5 notebook - Orange"/>
+        <div class="caption">Orange<br><code>10601331_TD</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601321_TD"
+                src="https://cdn.tc.promotron.com/web-images/b2c06f7b-3a82-42fb-9c25-7be28bfd4f02"
+                alt="Teak A5 notebook - Red"/>
+        <div class="caption">Red<br><code>10601321_TD</code></div>
+    </div>
+</div>
+
+<h4 class="section-title">Visualization by Variant + Position + Technology - Multiple Print Options on Multiple
+    Variants</h4>
+<p>Two variants (<em>Royal Blue</em>, <em>Solid Black</em>), each shown with three different print
+    position/technology combinations - six independent <code>&lt;img&gt;</code> elements in total.</p>
+<div class="viz-grid">
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601353_TD"
+                data-td-print-position-code="FRONT"
+                data-td-print-technology-code="DPRINT03"
+                src="https://cdn.tc.promotron.com/web-images/11280f42-be2a-4483-8410-7e8e0b119811"
+                alt="Teak A5 notebook - Royal Blue"/>
+        <div class="caption">Royal Blue<br>Front - Digital Print<br><code>FRONT / DPRINT03</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601353_TD"
+                data-td-print-position-code="FRONT"
+                data-td-print-technology-code="GPE01"
+                src="https://cdn.tc.promotron.com/web-images/11280f42-be2a-4483-8410-7e8e0b119811"
+                alt="Teak A5 notebook - Royal Blue"/>
+        <div class="caption">Royal Blue<br>Front - Screenprint<br><code>FRONT / GPE01</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601353_TD"
+                data-td-print-position-code="BACK"
+                data-td-print-technology-code="DEB01"
+                src="https://cdn.tc.promotron.com/web-images/11280f42-be2a-4483-8410-7e8e0b119811"
+                alt="Teak A5 notebook - Royal Blue"/>
+        <div class="caption">Royal Blue<br>Back - Embossing/Debossing<br><code>BACK / DEB01</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601390_TD"
+                data-td-print-position-code="FRONT"
+                data-td-print-technology-code="DPRINT03"
+                src="https://cdn.tc.promotron.com/web-images/1eba026b-12ee-49e8-9559-ee325bd0da67"
+                alt="Teak A5 notebook - Solid Black"/>
+        <div class="caption">Solid Black<br>Front - Digital Print<br><code>FRONT / DPRINT03</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601390_TD"
+                data-td-print-position-code="FRONT"
+                data-td-print-technology-code="GPE01"
+                src="https://cdn.tc.promotron.com/web-images/1eba026b-12ee-49e8-9559-ee325bd0da67"
+                alt="Teak A5 notebook - Solid Black"/>
+        <div class="caption">Solid Black<br>Front - Screenprint<br><code>FRONT / GPE01</code></div>
+    </div>
+    <div class="viz-tile">
+        <img
+                data-td-action="RenderVisualization"
+                data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+                data-td-product-code="10601390_TD"
+                data-td-print-position-code="BACK"
+                data-td-print-technology-code="DEB01"
+                src="https://cdn.tc.promotron.com/web-images/1eba026b-12ee-49e8-9559-ee325bd0da67"
+                alt="Teak A5 notebook - Solid Black"/>
+        <div class="caption">Solid Black<br>Back - Embossing/Debossing<br><code>BACK / DEB01</code></div>
+    </div>
+</div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;!-- Scanned automatically once the SDK initializes - no click handler needed --&gt;
+&lt;img
+    data-td-action="RenderVisualization"
+    data-td-supplier-guid="88be5fc8-0eed-4dbe-b25b-5e8d4e49696b"
+    data-td-product-code="10601355_TD"
+    data-td-print-position-code="FRONT"
+    data-td-print-technology-code="DPRINT03"
+    src="product-default.jpg"
+    alt="Teak A5 notebook - Navy"
+/&gt;
+
+&lt;!-- Optional attributes --&gt;
+&lt;!-- data-td-visualization-size="max600"                          fixed output size instead of the img's own pixel size --&gt;
+&lt;!-- data-td-visualization-logo="f47ac10b-58cc-4372-a567-..."      per-image logo override, ignores the customer's selected logo --&gt;</code></pre>
+</div>
+</body>
+</html>
