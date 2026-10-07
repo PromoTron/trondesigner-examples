@@ -2,6 +2,16 @@
 
 This repository contains integration examples for TronDesigner Editor.
 
+## Documentation
+The examples are the runnable companion of the **TronDesigner Developer Portal**: https://app.trondesigner.com/docs/
+
+- Every example page links to the guide that explains it (header: *Guide: ...*).
+- The full example ↔ guide map is on the portal: https://app.trondesigner.com/docs/documents/Examples.html
+- Business overview and user guides: https://support.promotron.com/hc/en-us/categories/47305625397137-TronDesigner
+
+When you add an example, copy `src/examples/_template.html`, set its *Guide* link, and add the example to
+`src/examples/index.html` and to the portal's Examples page (`docs-src/reference/02-examples.md` in the TronDesigner repo).
+
 ## Requirements
 1. Active TronDesigner license
 2. Node.js 20+ and npm
