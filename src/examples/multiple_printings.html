@@ -45,8 +45,6 @@
             console.log("Opening partial mode with multiple positions...");
             const td = window.tronDesigner;
 
-            td.setPartialProduct('PFC', '10086');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Partial",
@@ -63,6 +61,7 @@
                     ],
                     "addProducts": {
                         "supplierCode": "PFC",
+                        "variants": [],
                         "model": {
                             "modelCode": "R2200"
                         }
@@ -102,12 +101,10 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
-                Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer Portal</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/JavaScript_builder_API.html" target="_blank">Guide: JavaScript builder API</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Data_modes.html" target="_blank">Data modes</a> &nbsp;|&nbsp;
+            <a href="https://support.promotron.com/hc/en-us/articles/49260336578449-Integration-Scenarios" target="_blank">Scenarios</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -206,15 +203,16 @@
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
 
 td.setExactProduct('PFC', undefined, (b) => {
-    b.addVariant('10086021');
+    b.addVariant('R2200D94');
 });
 
 // Add multiple print positions
-td.addExactPrinting('front', 'PAD03');
-td.addExactPrinting('back', 'PAD03');
-td.addExactPrinting('left', 'SCREEN01');
+td.addExactPrinting('Left chest', 'MR07');
+td.addExactPrinting('Right chest', 'MR07');
+td.addExactPrinting('Left bicep', 'MR07');
 
-td.openDesigner(td.argsBuilder.build(), {mode: "dialog"});</code></pre>
+// open() sends the collected arguments and resets the builder
+td.open({mode: "dialog"});</code></pre>
 
     <h4 style="margin-top: 20px;">2. Using JSON Configuration</h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.openDesigner({
@@ -244,11 +242,15 @@ td.openDesigner(td.argsBuilder.build(), {mode: "dialog"});</code></pre>
         {position: 'Right chest', technology: 'MR07'},
 ];
 
+td.setExactProduct('PFC', undefined, (b) => {
+    b.addVariant('R2200D94');
+});
+
 positions.forEach(p => {
     td.addExactPrinting(p.position, p.technology);
 });
 
-td.openDesigner( {mode: "dialog"});</code></pre>
+td.open({mode: "dialog"});</code></pre>
 
     <h4 style="margin-top: 20px;">Benefits of Multiple Printings</h4>
     <ul style="line-height: 1.8;">

@@ -26,11 +26,6 @@
             console.log("Opening with user tracking:", currentUserId);
             const td = window.tronDesigner;
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -63,11 +58,6 @@
             console.log("Opening with order tracking:", currentOrderId);
             const td = window.tronDesigner;
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -96,11 +86,6 @@
         const td_open_with_cart_tracking = () => {
             console.log("Opening with cart item tracking:", currentCartItemId);
             const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
 
             td.openDesigner({
                 "openMode": "Create",
@@ -132,11 +117,6 @@
         const td_open_with_custom_data = () => {
             console.log("Opening with custom metadata");
             const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
 
             const customData = {
                 campaignId: "summer2024",
@@ -172,11 +152,6 @@
         const td_open_complete_tracking = () => {
             console.log("Opening with complete tracking data");
             const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
 
             const customData = {
                 campaignId: "summer2024",
@@ -225,9 +200,10 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer Portal</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Customers_and_orders.html" target="_blank">Guide: Customers and orders</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Data_modes.html" target="_blank">Data modes</a> &nbsp;|&nbsp;
+            <a href="https://support.promotron.com/hc/en-us/articles/49260336578449-Integration-Scenarios" target="_blank">Scenarios</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -236,12 +212,12 @@
 <div class="info-box">
     <h3>Session Tracking & Identifiers</h3>
     <p>Link print jobs to your application's users, orders, and cart items for seamless e-commerce integration.</p>
-    <p><strong>Available Tracking Fields:</strong></p>
+    <p><strong>Available Tracking Fields</strong> (in <code>printJob</code>):</p>
     <ul>
-        <li><code>externalUserId</code> - Your user identifier (link designs to user accounts)</li>
-        <li><code>externalOrderId</code> - Your order identifier (connect to specific orders)</li>
-        <li><code>externalCartItemId</code> - Shopping cart line item tracking</li>
-        <li><code>customData</code> - Arbitrary JSON metadata for analytics or business logic</li>
+        <li><code>customer.customerIdentity</code> - Your user identifier (link designs to user accounts); also <code>customerPerson</code>, <code>customerCompany</code>, <code>customerEmail</code></li>
+        <li><code>customer.orderCode</code> / <code>customer.orderTitle</code> - Your order identifier and title (connect to specific orders)</li>
+        <li><code>customer.orderItemCode</code> - Shopping cart line item tracking</li>
+        <li><code>customProperties</code> - Your own key/value metadata (string values) for analytics or business logic</li>
     </ul>
 </div>
 

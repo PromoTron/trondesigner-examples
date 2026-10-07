@@ -11,9 +11,10 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer Portal</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Integration_via_URL.html" target="_blank">Guide: Integration via URL</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Data_modes.html" target="_blank">Data modes</a> &nbsp;|&nbsp;
+            <a href="https://support.promotron.com/hc/en-us/articles/49260336578449-Integration-Scenarios" target="_blank">Scenarios</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -47,14 +48,14 @@
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml"/>
         <div class="actions">
             <h4>Partial Mode - Model Only</h4>
-            <a class="btn" href="{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&modelCode=100860&dataMode=Partial" target="_blank">
+            <a class="btn" href="{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&modelCode=100860" target="_blank">
                 Open via URL
                 <br>
                 <small>User selects variants</small>
             </a>
             <div style="margin-top: 10px; font-size: 12px; word-break: break-all;">
                 <strong>URL:</strong><br>
-                <code>{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&modelCode=100860&dataMode=Partial</code>
+                <code>{TD_URL_INTEGRATION}/editor?apiKey={TD_API_KEY}&supplierCode=PFC&modelCode=100860</code>
             </div>
         </div>
     </div>
@@ -95,7 +96,7 @@
 
     <div class="example">
         <div class="actions" style="text-align: left;">
-            <h4>Common URL Parameters</h4>
+            <h4>Supported URL Parameters</h4>
             <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
                 <tr style="border-bottom: 1px solid #ddd;">
                     <td style="padding: 8px;"><strong>Parameter</strong></td>
@@ -103,53 +104,54 @@
                 </tr>
                 <tr>
                     <td style="padding: 8px;"><code>apiKey</code></td>
-                    <td style="padding: 8px;">Your API key (required)</td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px;"><code>openMode</code></td>
-                    <td style="padding: 8px;">Create, Edit, or View</td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px;"><code>dataMode</code></td>
-                    <td style="padding: 8px;">Exact, Partial, or None</td>
+                    <td style="padding: 8px;">Website integration API key (required). Its allowed domains must include the Integration Site host.</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px;"><code>supplierCode</code></td>
-                    <td style="padding: 8px;">Supplier identifier</td>
+                    <td style="padding: 8px;">Supplier code, e.g. PFC</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>productCodes</code></td>
+                    <td style="padding: 8px;">Product variant code; repeat for several variants</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px;"><code>modelCode</code></td>
-                    <td style="padding: 8px;">Product model code</td>
+                    <td style="padding: 8px;">Product model code; the customer chooses the variants (Partial data mode)</td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><code>productCode</code></td>
-                    <td style="padding: 8px;">Specific variant code</td>
+                    <td style="padding: 8px;"><code>positionCodes</code></td>
+                    <td style="padding: 8px;">Print position code (e.g. front); repeat for several print options</td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><code>printPositionCode</code></td>
-                    <td style="padding: 8px;">Print position (e.g., front)</td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px;"><code>printTechnologyCode</code></td>
-                    <td style="padding: 8px;">Technology (e.g., PAD03)</td>
+                    <td style="padding: 8px;"><code>technologyCodes</code></td>
+                    <td style="padding: 8px;">Print technology code (e.g. PAD03), paired with positionCodes by order</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px;"><code>printJobGuid</code></td>
-                    <td style="padding: 8px;">Existing print job ID</td>
+                    <td style="padding: 8px;">Existing print job GUID</td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><code>returnUrl</code></td>
-                    <td style="padding: 8px;">URL to redirect after completion</td>
+                    <td style="padding: 8px;"><code>openMode</code></td>
+                    <td style="padding: 8px;">Edit or View (default), used with printJobGuid</td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><code>externalUserId</code></td>
+                    <td style="padding: 8px;"><code>showSelectedVariants</code>, <code>showSelectedPrintOptions</code></td>
+                    <td style="padding: 8px;">None (default), Selected, All or Missing</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>showQuantityInputs</code>, <code>alwaysShowImageSelect</code></td>
+                    <td style="padding: 8px;">true to turn the option on</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;"><code>customerIdentity</code></td>
                     <td style="padding: 8px;">Your user identifier</td>
                 </tr>
                 <tr>
-                    <td style="padding: 8px;"><code>externalOrderId</code></td>
-                    <td style="padding: 8px;">Your order identifier</td>
+                    <td style="padding: 8px;"><code>options</code></td>
+                    <td style="padding: 8px;">Complete editor arguments as URL-encoded JSON (overrides the parameters above)</td>
                 </tr>
             </table>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">Names are case-sensitive. There is no <code>dataMode</code> parameter: the data mode follows from the parameters you use. A <code>returnUrl</code>, order data and custom properties are available in <code>options</code> JSON or in token links created with the REST API - see the <a href="https://app.trondesigner.com/docs/documents/Integration_via_URL.html" target="_blank">Integration via URL</a> guide.</p>
         </div>
     </div>
 </div>
