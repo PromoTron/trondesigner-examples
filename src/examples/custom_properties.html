@@ -106,15 +106,14 @@
             const td = window.tronDesigner;
             td.setExactProduct('PFC', undefined, (b) => {
                 b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-            const args = td.argsBuilder.build();
-            args.printJob.customProperties = {
-                source: 'js-builder',
-                cartLineId: 'CL-' + Math.floor(Math.random() * 9000 + 1000),
-                campaign: 'SPRING24'
-            };
-            td.openDesigner(args, { mode: 'dialog' });
+            })
+                .addExactPrinting('front', 'PAD03')
+                .addCustomProperties({
+                    source: 'js-builder',
+                    cartLineId: 'CL-' + Math.floor(Math.random() * 9000 + 1000)
+                })
+                .addCustomProperty('campaign', 'SPRING24')
+                .open({ mode: 'dialog' });
         }
 
         function openWithPrintJobArgs() {
@@ -188,7 +187,7 @@
     <p>The same <code>customProperties</code> object can be passed in three ways. All three produce identical behaviour; pick the one that fits your integration style:</p>
     <ul>
         <li><strong>HTML data attribute</strong> — <code>data-td-custom-properties</code> JSON string on the action button</li>
-        <li><strong>JS builder</strong> — mutate the object returned by <code>argsBuilder.build()</code> before passing it to <code>openDesigner()</code></li>
+        <li><strong>JS builder</strong> — <code>addCustomProperties()</code> / <code>addCustomProperty()</code> before <code>open()</code></li>
         <li><strong>Print job arguments</strong> — nest <code>customProperties</code> directly inside the <code>printJob</code> argument of <code>openDesigner()</code></li>
     </ul>
     <p>After you finish a design, the <code>printJob.created</code> callback fires. The custom properties you sent are highlighted in green below the event log.</p>
@@ -219,7 +218,7 @@
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <span class="approach-label">JS Builder</span>
-            <h4>argsBuilder.build() + inject</h4>
+            <h4>addCustomProperties() + open()</h4>
             <button class="btn" onclick="openWithBuilder()">
                 Open Designer
                 <br>
@@ -275,17 +274,14 @@
 
     <h4 style="margin-top: 20px;">2 — JS builder</h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
-td.setExactProduct('PFC', undefined, (b) =&gt; { b.addVariant('10086021'); });
-td.addExactPrinting('front', 'PAD03');
-
-const args = td.argsBuilder.build();
-args.printJob.customProperties = {
-    source: 'js-builder',
-    cartLineId: 'CL-1234',
-    campaign: 'SPRING24'
-};
-
-td.openDesigner(args, { mode: 'dialog' });</code></pre>
+td.setExactProduct('PFC', undefined, (b) =&gt; { b.addVariant('10086021'); })
+    .addExactPrinting('front', 'PAD03')
+    .addCustomProperties({
+        source: 'js-builder',
+        cartLineId: 'CL-1234'
+    })
+    .addCustomProperty('campaign', 'SPRING24')
+    .open({ mode: 'dialog' });</code></pre>
 
     <h4 style="margin-top: 20px;">3 — Print job arguments</h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({

@@ -66,13 +66,14 @@
 
             console.log("Setting logo:", currentLogo);
             const td = window.tronDesigner;
-            td.setLogo(currentLogo
+            td.setLogo(currentLogo)
                 .then(() => {
                     console.log("Logo set successfully!");
+                    updateLogoDisplay(`Logo set: ${currentLogo}`);
                 })
                 .catch((error) => {
                     console.error("Error setting logo:", error);
-                }));
+                });
         };
 
         // Get current logo
@@ -80,9 +81,13 @@
             const td = window.tronDesigner;
             td.getLogo()
                 .then((logo) => {
+                    // resolves to the logo object (ILogoDTO) or undefined when the customer has no logo
                     console.log("Current logo:", logo);
-                    updateLogoDisplay(`Current logo: ${logo}`);
+                    updateLogoDisplay(logo ? `Current logo: ${logo.name} (${logo.logoGuid})` : 'No logo selected');
                 })
+                .catch((error) => {
+                    console.error("Error getting logo:", error);
+                });
         };
 
         // Clear logo

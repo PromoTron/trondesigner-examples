@@ -14,15 +14,16 @@
         const td_open = () => {
             console.log("Opening Tron Designer...");
             const td = window.tronDesigner;
+            // open() sends the collected arguments and resets the builder for the next call
+            // (with data-td-log-level="debug" the console shows the arguments that were sent)
             td.setExactProduct('PFC', undefined, (b) => {
                 b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-            console.log(td.argsBuilder.build())
-            td.openDesigner(td.argsBuilder.build(), { mode: "dialog" });
+            })
+                .addExactPrinting('front', 'PAD03')
+                .open({ mode: "dialog" });
         }
     </script>
-    <title>Tron Designer Integration - JS Builder Basic Example</title>
+    <title>Tron Designer Integration - JS Builder Exact Example</title>
 </head>
 <body>
 <div class="header">

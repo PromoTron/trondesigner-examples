@@ -61,32 +61,41 @@
             logEvent("Script", "Initialized", "TronDesigner API is ready");
             const td = window.tronDesigner;
 
-            // Subscribe to all available events
+            // Subscribe to every event the editor sends (entity type + event type)
             td.subscribeDesignerEvent("printJob", "created", onPrintJobCreated);
             td.subscribeDesignerEvent("printJob", "updated", logEventData);
             td.subscribeDesignerEvent("logo", "created", logEventData);
             td.subscribeDesignerEvent("logo", "updated", logEventData);
             td.subscribeDesignerEvent("logo", "deleted", logEventData);
+            td.subscribeDesignerEvent("logo", "selected", logEventData);
             td.subscribeDesignerEvent("text", "created", logEventData);
-            td.subscribeDesignerEvent("text", "updated", logEventData);
-            td.subscribeDesignerEvent("proofreading", "created", logEventData);
-            td.subscribeDesignerEvent("proofreading", "updated", logEventData);
-
+            td.subscribeDesignerEvent("proofreading", "created", onProofreadingCreated);
 
             logEvent("Events", "Subscribed", "All event listeners registered");
         }
 
-        function onPrintJobCreated(data) {
-            printJobGuid = data.entityGuid;
-            logEvent("PrintJob", "Created", `GUID: ${data.entityGuid}`, data);
+        function onPrintJobCreated(event) {
+            // the print job GUID is in event.entityGuid (and event.detail.printJobGuid)
+            printJobGuid = event.entityGuid;
+            logEvent("printJob", "created", `GUID: ${event.entityGuid}`, event.detail);
             document.getElementById('edit-section').style.display = 'block';
-            document.getElementById('guid-display').textContent = data.entityGuid;
+            document.getElementById('guid-display').textContent = event.entityGuid;
         }
 
-        function logEventData(data) {
-            logEvent(data.entityType, data.eventType, `GUID: ${data.entityGuid}`, data.detail);
+        function onProofreadingCreated(event) {
+            // detail is a Blob with the proofreading PDF
+            logEvent("proofreading", "created", `Print job GUID: ${event.entityGuid}`,
+                { type: event.detail?.type, size: event.detail?.size });
         }
 
+        function logEventData(event) {
+            logEvent(event.entityType, event.eventType, `GUID: ${event.entityGuid}`, event.detail);
+        }
+
+        // the editor has no open/close events; use the onClose callback of the open options
+        function onEditorClosed(reason, redirectUrl) {
+            logEvent("Editor", "closed", `Reason: ${reason}`, redirectUrl ? { redirectUrl } : null);
+        }
         function logEvent(type, action, message, data = null) {
             const timestamp = new Date().toLocaleTimeString();
             eventLog.push({
@@ -125,11 +134,6 @@
             logEvent("Action", "Create", "Opening designer in Create mode");
             const td = window.tronDesigner;
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -149,7 +153,7 @@
                         ]
                     }
                 }
-            }, {mode: "dialog"});
+            }, {mode: "dialog", onClose: onEditorClosed});
         }
 
         const td_edit_existing = () => {
@@ -162,10 +166,11 @@
 
             td.openDesigner({
                 "openMode": "Edit",
-                "printJobGuid": printJobGuid
-            }, {mode: "dialog"});
-        }
-    </script>
+                "printJob": {
+                    "printJobGuid": printJobGuid
+                }
+            }, {mode: "dialog", onClose: onEditorClosed});
+        }    </script>
     <title>Tron Designer Integration - Event Handling Example</title>
 </head>
 <body>
@@ -187,14 +192,16 @@
 <div class="info-box">
     <h3>Event Handling & Callbacks</h3>
     <p>TronDesigner provides comprehensive event callbacks to track editor lifecycle and print job changes.</p>
-    <p><strong>Available Events:</strong></p>
+    <p><strong>Available Events</strong> (<code>entityType</code> / <code>eventType</code>):</p>
     <ul>
-        <li><code>printJob.created</code> - New print job created</li>
-        <li><code>printJob.updated</code> - Existing print job modified</li>
-        <li><code>printJob.deleted</code> - Print job removed</li>
-        <li><code>editor.opened</code> - Editor interface opened</li>
-        <li><code>editor.closed</code> - Editor interface closed</li>
+        <li><code>printJob</code> / <code>created</code> - A new print job was saved</li>
+        <li><code>printJob</code> / <code>updated</code> - An existing print job was saved again</li>
+        <li><code>logo</code> / <code>created</code>, <code>updated</code>, <code>deleted</code> - The customer uploaded, changed or deleted a logo</li>
+        <li><code>logo</code> / <code>selected</code> - A logo was selected in the logo gallery or upload dialog</li>
+        <li><code>text</code> / <code>created</code> - A text was created in the editor</li>
+        <li><code>proofreading</code> / <code>created</code> - A proofreading PDF was generated</li>
     </ul>
+    <p>There are no editor open/close events: pass an <code>onClose(reason)</code> callback in the open options instead.</p>
 </div>
 
 <div class="examples">
@@ -243,24 +250,22 @@
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>// Subscribe to events
 const td = window.tronDesigner;
 
-td.subscribeDesignerEvent("printJob", "created", (data) => {
-    console.log("Print job created:", data.printJobGuid);
+td.subscribeDesignerEvent("printJob", "created", (event) => {
+    console.log("Print job created:", event.entityGuid, event.detail);
 });
 
-td.subscribeDesignerEvent("printJob", "updated", (data) => {
-    console.log("Print job updated:", data.printJobGuid);
+td.subscribeDesignerEvent("printJob", "updated", (event) => {
+    console.log("Print job updated:", event.entityGuid);
 });
 
-td.subscribeDesignerEvent("printJob", "deleted", (data) => {
-    console.log("Print job deleted:", data.printJobGuid);
+td.subscribeDesignerEvent("proofreading", "created", (event) => {
+    console.log("Proofreading PDF generated:", event.detail); // Blob
 });
 
-td.subscribeDesignerEvent("editor", "opened", (data) => {
-    console.log("Editor opened");
-});
-
-td.subscribeDesignerEvent("editor", "closed", (data) => {
-    console.log("Editor closed");
+// Editor closed: use the onClose callback of the open options
+td.openDesigner(editorArguments, {
+    mode: "dialog",
+    onClose: (reason) => console.log("Editor closed:", reason) // 'Confirmed', 'Cancelled' or 'Error'
 });</code></pre>
 </div>
 </body>

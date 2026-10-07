@@ -14,11 +14,6 @@
         const td_open = () => {
             console.log("Opening Tron Designer...");
             const td = window.tronDesigner;
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-            console.log(td.argsBuilder.build())
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -41,7 +36,7 @@
             }, { mode: "dialog" });
         }
     </script>
-    <title>Tron Designer Integration - JS Builder Basic Example</title>
+    <title>Tron Designer Integration - JSON Exact Example</title>
 </head>
 <body>
 <div class="header">

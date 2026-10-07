@@ -9,7 +9,6 @@
             referrerpolicy="origin"
             data-td-api="{TD_URL}/api"
             data-td-api-key="{TD_API_KEY}"
-            data-td-script-initialized-callback="onTronDesignerReady"
     ></script>
     <script>
 
@@ -26,6 +25,8 @@
         }
     </script>
     <script>
+        // The editor is a <trondesigner-editor> element with an open shadow root. The script creates a new element
+        // every time the editor opens, so watch the page for it and add the host styles to its shadow root.
         const EDITOR_SELECTOR = "trondesigner-editor";
 
         function injectStyle(editorEl) {
@@ -62,10 +63,8 @@
             childList: true,
             subtree: true
         });
-
-        obs.observe(document.documentElement, { childList: true, subtree: true });
     </script>
-    <title>Tron Designer Integration - Event Handling Example</title>
+    <title>Tron Designer Integration - Modify Styles from Host Example</title>
 </head>
 <body>
 <div class="header">
