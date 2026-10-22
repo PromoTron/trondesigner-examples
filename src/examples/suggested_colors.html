@@ -1,0 +1,552 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTdReady"
+            data-td-print-job-created-callback="onPrintJobCreated"
+            data-td-print-job-updated-callback="onPrintJobUpdated"
+    ></script>
+    <style>
+        .approach-label {
+            display: inline-block;
+            background: #0066cc;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .approach-label.recolor { background: #2d7a2d; }
+        .approach-label.negative { background: #b26b00; }
+        .approach-label.edit { background: #6b3fa0; }
+
+        .example { max-width: 300px; }
+
+        .example .expected {
+            font-size: 12px;
+            color: #555;
+            margin: 6px 0 10px;
+        }
+
+        .example pre {
+            background: #f1f1f1;
+            font-size: 11px;
+            padding: 6px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .controls {
+            margin: 20px 10px;
+            padding: 15px 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-end;
+        }
+
+        .controls label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px; }
+        .controls select, .controls input { padding: 6px; font-size: 13px; min-width: 260px; }
+
+        table.colors { border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+        table.colors th, table.colors td { border: 1px solid #ddd; padding: 4px 10px; text-align: left; }
+        table.colors .swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid #999; vertical-align: middle; margin-right: 6px; }
+
+        #playground-json {
+            width: 100%;
+            min-height: 140px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .event-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .event-time { color: #858585; font-size: 11px; }
+        .event-type { color: #4ec9b0; font-weight: bold; }
+        .event-action { color: #dcdcaa; }
+
+        .event-data {
+            color: #ce9178;
+            margin-left: 20px;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+    <script>
+        const SUPPLIER_CODE = 'PFC';
+        const PRODUCT_CODE = '10086021';
+
+        // Print options of PFC 10086021 by color mode
+        const PRINTINGS = {
+            pantone: { printPositionCode: 'front', printTechnologyCode: 'PAD03' },        // Pantone, max. 4 colors
+            pantone1: { printPositionCode: 'wrap1color', printTechnologyCode: 'GPE02' },  // Pantone, max. 1 color
+            cmyk: { printPositionCode: 'wrap', printTechnologyCode: 'DRD03' },            // CMYK
+            colorless: { printPositionCode: 'front', printTechnologyCode: 'LAS02' }       // Colorless (laser engraving)
+        };
+
+        // A mix of matched, unmatched and invalid values, with slot gaps to test numeric ordering
+        const MIXED_COLORS = {
+            'EDITOR:DESIGN_COLOR_10': 'PMS:PANTONE 354 C',
+            'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C',
+            'EDITOR:DESIGN_COLOR_2': 'RGB:#FFDE00',
+            'EDITOR:DESIGN_COLOR_3': 'CMYK:#FED40000',
+            'EDITOR:DESIGN_COLOR_5': 'PMS:UNKNOWN COLOR',
+            'EDITOR:DESIGN_COLOR_6': 'CMYK:#0021FF00',
+            'EDITOR:DESIGN_COLOR_7': 'RGB:#12345'
+        };
+
+        let lastPrintJobGuid = null;
+
+        function onTdReady() {
+            logEvent('Script', 'Initialized', 'TronDesigner API is ready');
+        }
+
+        function onPrintJobCreated(event) {
+            lastPrintJobGuid = event && (event.entityGuid || (event.detail && event.detail.printJobGuid));
+            document.getElementById('guid-display').textContent = lastPrintJobGuid || '(none)';
+            logEvent('PrintJob', 'Created', `GUID: ${lastPrintJobGuid}`, event && event.detail && event.detail.customProperties);
+        }
+
+        function onPrintJobUpdated(event) {
+            logEvent('PrintJob', 'Updated', `GUID: ${event && event.entityGuid}`, event && event.detail && event.detail.customProperties);
+        }
+
+        function getLogo() {
+            const url = document.getElementById('logo-url').value;
+            return url ? { url } : undefined;
+        }
+
+        function getSingleColor() {
+            return document.getElementById('single-color').value;
+        }
+
+        function openWith(customProperties, printingKey) {
+            const printJob = {
+                customProperties,
+                addProducts: { supplierCode: SUPPLIER_CODE, variants: [{ productCode: PRODUCT_CODE }] },
+                addPrintings: [PRINTINGS[printingKey]]
+            };
+            const logo = getLogo();
+            if (logo) printJob.logo = logo;
+            logEvent('Open', 'Create', `${printingKey}: ${PRINTINGS[printingKey].printPositionCode}/${PRINTINGS[printingKey].printTechnologyCode}`, printJob);
+            window.tronDesigner.openDesigner({ openMode: 'Create', dataMode: 'Exact', printJob }, { mode: 'dialog' });
+        }
+
+        function openSingle(printingKey) {
+            openWith({ 'EDITOR:DESIGN_COLOR_1': getSingleColor() }, printingKey);
+        }
+
+        function openWithBuilder() {
+            const td = window.tronDesigner
+                .addCustomProperties({
+                    'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C',
+                    'EDITOR:DESIGN_COLOR_2': 'RGB:#0033A0'
+                })
+                .setExactProduct(SUPPLIER_CODE, undefined, (p) => p.addVariant(PRODUCT_CODE))
+                .addExactPrinting('front', 'PAD03');
+            logEvent('Open', 'Create (builder)', 'addCustomProperties: PANTONE 185 C + RGB:#0033A0');
+            td.open({ mode: 'dialog' });
+        }
+
+        function openPlayground() {
+            let customProperties;
+            try {
+                customProperties = JSON.parse(document.getElementById('playground-json').value);
+            } catch (e) {
+                alert('Invalid JSON: ' + e.message);
+                return;
+            }
+            openWith(customProperties, document.getElementById('playground-printing').value);
+        }
+
+        // Edit mode: customProperties are merged into the stored ones.
+        function openEdit(customProperties) {
+            if (!lastPrintJobGuid) {
+                alert('Create a print job first (open the editor above and confirm the design).');
+                return;
+            }
+            const printJob = { printJobGuid: lastPrintJobGuid };
+            if (customProperties) printJob.customProperties = customProperties;
+            logEvent('Open', 'Edit', `GUID: ${lastPrintJobGuid}`, customProperties || '(no customProperties)');
+            window.tronDesigner.openDesigner({ openMode: 'Edit', printJob }, { mode: 'dialog' });
+        }
+
+        let eventLog = [];
+
+        function logEvent(type, action, message, data = null) {
+            eventLog.push({ timestamp: new Date().toLocaleTimeString(), type, action, message, data });
+            updateEventLog();
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        }
+
+        function updateEventLog() {
+            const logContainer = document.getElementById('event-log');
+            if (!logContainer) return;
+            logContainer.innerHTML = eventLog.map(e => `
+                <div class="event-entry">
+                    <span class="event-time">[${e.timestamp}]</span>
+                    <span class="event-type">${e.type}</span>.<span class="event-action">${e.action}</span>
+                    ${e.message ? '- ' + escapeHtml(e.message) : ''}
+                    ${e.data !== null && e.data !== undefined
+                        ? `<div class="event-data">${escapeHtml(typeof e.data === 'string' ? e.data : JSON.stringify(e.data, null, 2))}</div>`
+                        : ''}
+                </div>
+            `).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            eventLog = [];
+            updateEventLog();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mixed-colors').textContent = JSON.stringify(MIXED_COLORS, null, 2);
+            document.getElementById('playground-json').value = JSON.stringify({
+                'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C',
+                'EDITOR:DESIGN_COLOR_2': 'RGB:#0033A0',
+                'EDITOR:DESIGN_INSTRUCTION': 'Use only our brand colors.'
+            }, null, 2);
+        });
+    </script>
+    <title>Tron Designer Integration - Suggested Design Colors Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Custom-properties.html#suggest-design-colors-in-the-editor" target="_blank">Suggested design colors</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Suggested Design Colors</h3>
+    <p>Pass your customer's brand colors as custom properties <code>EDITOR:DESIGN_COLOR_&lt;number&gt;</code>
+        (e.g. <code>EDITOR:DESIGN_COLOR_1</code>, <code>EDITOR:DESIGN_COLOR_10</code>). Keys are case-sensitive, the suffix must be a
+        non-negative integer, colors are shown in numeric order and gaps are allowed. Each value has the format <code>Source:ColorValue</code>:</p>
+    <ul>
+        <li><code>PMS:PANTONE 185 C</code> — full Pantone name from the color map</li>
+        <li><code>RGB:#EB002A</code> or <code>RGB:#EB002AFF</code> — 6 (RGB) or 8 (RGBA) hex digits</li>
+        <li><code>CMYK:#00F8D000</code> — four channel bytes <code>#CCMMYYKK</code> (00 = 0 %, FF = 100 %)</li>
+    </ul>
+    <p>The value must match the color map <strong>exactly</strong> (case and surrounding whitespace are ignored); the nearest color is not chosen.</p>
+    <p><strong>What it does:</strong></p>
+    <ul>
+        <li><strong>Suggested Colors</strong> section at the top of the logo and text color selectors (Pantone and CMYK). Unmatched or invalid
+            entries stay visible but disabled, with an error icon.</li>
+        <li><strong>Automatic logo recoloring</strong> — when <em>exactly one</em> non-empty color is supplied and it matches the map, logo
+            adaptation recolors the whole logo to it for Pantone, CMYK and SingleColor print modes. Colorless modes keep their normal behavior.
+            Applies to the initial integration logo and later uploads/replacements, never to logos already placed in a saved design.</li>
+    </ul>
+</div>
+
+<div style="margin: 0 10px;">
+    <h4>Verified values (DEV color map)</h4>
+    <table class="colors">
+        <tr><th>Pantone</th><th>PMS</th><th>RGB</th><th>CMYK</th></tr>
+        <tr><td><span class="swatch" style="background:#EB002A"></span>PANTONE 185 C</td><td><code>PMS:PANTONE 185 C</code></td><td><code>RGB:#EB002A</code></td><td><code>CMYK:#00F8D000</code></td></tr>
+        <tr><td><span class="swatch" style="background:#0033A0"></span>PANTONE 286 C</td><td><code>PMS:PANTONE 286 C</code></td><td><code>RGB:#0033A0</code></td><td><code>CMYK:#FED40000</code></td></tr>
+        <tr><td><span class="swatch" style="background:#00AE42"></span>PANTONE 354 C</td><td><code>PMS:PANTONE 354 C</code></td><td><code>RGB:#00AE42</code></td><td><code>CMYK:#C301EB00</code></td></tr>
+        <tr><td><span class="swatch" style="background:#FFDE00"></span>PANTONE Yellow C</td><td><code>PMS:PANTONE Yellow C</code></td><td><code>RGB:#FFDE00</code></td><td><code>CMYK:#0616E900</code></td></tr>
+    </table>
+</div>
+
+<div class="controls">
+    <div>
+        <label for="logo-url">Preselected logo (printJob.logo.url)</label>
+        <select id="logo-url">
+            <option value="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg">TronDesigner logo (SVG, vector)</option>
+            <option value="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.png">TronDesigner logo (PNG, raster)</option>
+            <option value="">No logo (upload in the editor)</option>
+        </select>
+    </div>
+    <div>
+        <label for="single-color">Single suggested color (used by "Automatic recoloring")</label>
+        <select id="single-color">
+            <option value="PMS:PANTONE 185 C">PMS:PANTONE 185 C</option>
+            <option value="RGB:#EB002A">RGB:#EB002A (= 185 C)</option>
+            <option value="RGB:#EB002AFF">RGB:#EB002AFF (= 185 C, with alpha)</option>
+            <option value="CMYK:#00F8D000">CMYK:#00F8D000 (= 185 C)</option>
+            <option value="PMS:PANTONE 286 C">PMS:PANTONE 286 C</option>
+            <option value="  pms : pantone 354 c  ">"  pms : pantone 354 c  " (case + whitespace)</option>
+        </select>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">1. Suggested Colors in the color selectors</h3>
+<div class="examples">
+    <div class="example">
+        <span class="approach-label">JSON</span>
+        <h4>Mixed list — Pantone printing</h4>
+        <div class="expected">Open the logo <em>Colors</em> tab and the text dialog color selector. Expected order: 185 C, Yellow C, 286 C,
+            <code>UNKNOWN COLOR</code> (disabled), <code>CMYK:#0021FF00</code> (disabled, not in map), <code>RGB:#12345</code> (disabled, invalid),
+            354 C (slot 10 last). Several colors &rarr; no automatic recoloring.</div>
+        <pre id="mixed-colors"></pre>
+        <button class="btn" onclick="openWith(MIXED_COLORS, 'pantone')">Open Designer<br><small>front / PAD03 (Pantone)</small></button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label">JSON</span>
+        <h4>Mixed list — CMYK printing</h4>
+        <div class="expected">Same list in the CMYK color selector. Picking a suggestion should set the map's CMYK equivalent
+            (e.g. 185 C &rarr; <code>#00F8D000</code>).</div>
+        <button class="btn" onclick="openWith(MIXED_COLORS, 'cmyk')">Open Designer<br><small>wrap / DRD03 (CMYK)</small></button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label">JS Builder</span>
+        <h4>addCustomProperties()</h4>
+        <div class="expected">Two matched colors (185 C, 286 C) passed through the builder. Suggestions shown, no automatic recoloring.</div>
+        <button class="btn" onclick="openWithBuilder()">Open Designer<br><small>front / PAD03 (Pantone)</small></button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label">HTML Attribute</span>
+        <h4>data-td-custom-properties</h4>
+        <div class="expected">Single color via data attribute (no logo preselected). Upload a logo in the editor — expected: it is recolored
+            to 354 C, and 354 C is offered in Suggested Colors.</div>
+        <button
+                class="btn"
+                data-td-action="OpenCreate"
+                data-td-supplier-code="PFC"
+                data-td-product-code="10086021"
+                data-td-print-position-code="front"
+                data-td-print-technology-code="PAD03"
+                data-td-custom-properties='{"EDITOR:DESIGN_COLOR_1":"PMS:PANTONE 354 C"}'>
+            Open Designer<br><small>front / PAD03 (Pantone)</small>
+        </button>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">2. Automatic logo recoloring (exactly one color)</h3>
+<div class="examples">
+    <div class="example">
+        <span class="approach-label recolor">Pantone</span>
+        <h4>front / PAD03</h4>
+        <div class="expected">Expected: adaptation dialog lists step <em>"Recolored to suggested color …"</em> and the preview is fully in the
+            selected color. Customer can still keep the original.</div>
+        <button class="btn" onclick="openSingle('pantone')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label recolor">Pantone 1 color</span>
+        <h4>wrap1color / GPE02</h4>
+        <div class="expected">Pantone mode limited to one color. Expected: logo recolored to the selected color.</div>
+        <button class="btn" onclick="openSingle('pantone1')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label recolor">CMYK</span>
+        <h4>wrap / DRD03</h4>
+        <div class="expected">Expected: logo recolored to the CMYK equivalent of the selected color.</div>
+        <button class="btn" onclick="openSingle('cmyk')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label negative">Colorless</span>
+        <h4>front / LAS02</h4>
+        <div class="expected">Laser engraving. Expected: <strong>no</strong> recoloring — normal colorless adaptation.</div>
+        <button class="btn" onclick="openSingle('colorless')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label recolor">Upload later</span>
+        <h4>No preselected logo</h4>
+        <div class="expected">Select <em>No logo</em> above (or open and replace the logo). Upload a logo in the editor — expected: the uploaded
+            logo is recolored as well.</div>
+        <button class="btn" onclick="openSingle('pantone')">Open Designer<br><small>front / PAD03 (Pantone)</small></button>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">3. No automatic recoloring expected</h3>
+<div class="examples">
+    <div class="example">
+        <span class="approach-label negative">Two colors, same result</span>
+        <div class="expected"><code>PMS:PANTONE 185 C</code> + <code>RGB:#EB002A</code> both resolve to 185 C. Multiple supplied colors
+            prevent recoloring. Both appear in Suggested Colors.</div>
+        <button class="btn" onclick="openWith({'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C', 'EDITOR:DESIGN_COLOR_2': 'RGB:#EB002A'}, 'pantone')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label negative">One matched + one unmatched</span>
+        <div class="expected">Only one matches, but two are supplied &rarr; no recoloring.</div>
+        <button class="btn" onclick="openWith({'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C', 'EDITOR:DESIGN_COLOR_2': 'PMS:NOT A COLOR'}, 'pantone')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label negative">Single unmatched</span>
+        <div class="expected"><code>RGB:#EB002B</code> is valid syntax but not in the map (no nearest match) &rarr; normal adaptation,
+            disabled suggestion with error icon.</div>
+        <button class="btn" onclick="openWith({'EDITOR:DESIGN_COLOR_1': 'RGB:#EB002B'}, 'pantone')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label negative">Invalid keys</span>
+        <div class="expected"><code>editor:design_color_1</code> (wrong case), <code>EDITOR:DESIGN_COLOR_A</code>, <code>EDITOR:DESIGN_COLOR_-1</code>
+            &rarr; ignored: no Suggested Colors section at all, no recoloring.</div>
+        <button class="btn" onclick="openWith({'editor:design_color_1': 'PMS:PANTONE 185 C', 'EDITOR:DESIGN_COLOR_A': 'PMS:PANTONE 286 C', 'EDITOR:DESIGN_COLOR_-1': 'PMS:PANTONE 354 C'}, 'pantone')">Open Designer</button>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">4. Tolerance</h3>
+<div class="examples">
+    <div class="example">
+        <span class="approach-label recolor">Empty values + gaps</span>
+        <div class="expected"><code>_1</code> and <code>_2</code> are empty / whitespace, <code>_7</code> is 286 C &rarr; counts as exactly one color:
+            single suggestion and logo recolored to 286 C.</div>
+        <button class="btn" onclick="openWith({'EDITOR:DESIGN_COLOR_1': '', 'EDITOR:DESIGN_COLOR_2': '   ', 'EDITOR:DESIGN_COLOR_7': 'PMS:PANTONE 286 C'}, 'pantone')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label recolor">Case &amp; whitespace</span>
+        <div class="expected"><code>"  rgb : #00ae42  "</code> &rarr; matches 354 C. Single color &rarr; logo recolored.</div>
+        <button class="btn" onclick="openWith({'EDITOR:DESIGN_COLOR_3': '  rgb : #00ae42  '}, 'pantone')">Open Designer</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label">With design instructions</span>
+        <div class="expected">Combined with <code>EDITOR:DESIGN_INSTRUCTION</code> — both features work together.</div>
+        <button class="btn" onclick="openWith({'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C', 'EDITOR:DESIGN_INSTRUCTION': 'Use our brand red (PANTONE 185 C) only.'}, 'pantone')">Open Designer</button>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">5. Edit an existing print job</h3>
+<div class="examples">
+    <div class="example">
+        <p><strong>Last created print job:</strong><br><code id="guid-display">(none — create one above first)</code></p>
+    </div>
+
+    <div class="example">
+        <span class="approach-label edit">Edit</span>
+        <h4>Reopen as saved</h4>
+        <div class="expected">Saved colors are shown in Suggested Colors; logos already in the design are <strong>not</strong> recolored again.</div>
+        <button class="btn" onclick="openEdit()">Open Edit</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label edit">Edit</span>
+        <h4>Change color to 286 C</h4>
+        <div class="expected">Overwrites <code>EDITOR:DESIGN_COLOR_1</code>. Existing logo stays as is; a newly uploaded logo is recolored to 286 C
+            (if no other color slots are stored).</div>
+        <button class="btn" onclick="openEdit({'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 286 C'})">Open Edit</button>
+    </div>
+
+    <div class="example">
+        <span class="approach-label edit">Edit</span>
+        <h4>Clear color</h4>
+        <div class="expected">Empty string &rarr; the slot is ignored; no Suggested Colors section if it was the only one.</div>
+        <button class="btn" onclick="openEdit({'EDITOR:DESIGN_COLOR_1': ''})">Open Edit</button>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">6. Playground</h3>
+<div class="controls" style="display: block;">
+    <label for="playground-json">printJob.customProperties (JSON)</label>
+    <textarea id="playground-json"></textarea>
+    <div style="margin-top: 10px; display: flex; gap: 15px; align-items: center;">
+        <select id="playground-printing">
+            <option value="pantone">front / PAD03 (Pantone)</option>
+            <option value="pantone1">wrap1color / GPE02 (Pantone, 1 color)</option>
+            <option value="cmyk">wrap / DRD03 (CMYK)</option>
+            <option value="colorless">front / LAS02 (Colorless)</option>
+        </select>
+        <button class="btn" onclick="openPlayground()">Open Designer</button>
+    </div>
+</div>
+
+<div style="margin: 30px 10px 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Event Log</h3>
+        <button class="btn" onclick="clearLog()">Clear Log</button>
+    </div>
+    <div id="event-log" class="event-log">
+        <div style="color: #858585; text-align: center; padding: 50px;">
+            Waiting for events...
+        </div>
+    </div>
+</div>
+
+<div style="margin: 30px 10px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+
+    <h4>1 — HTML data attribute</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;button
+    data-td-action="OpenCreate"
+    data-td-supplier-code="PFC"
+    data-td-product-code="10086021"
+    data-td-print-position-code="front"
+    data-td-print-technology-code="PAD03"
+    data-td-custom-properties='{"EDITOR:DESIGN_COLOR_1":"PMS:PANTONE 185 C"}'&gt;
+    Design your print
+&lt;/button&gt;</code></pre>
+
+    <h4 style="margin-top: 20px;">2 — JS builder</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner
+    .addCustomProperties({
+        'EDITOR:DESIGN_COLOR_1': 'PMS:PANTONE 185 C',
+        'EDITOR:DESIGN_COLOR_2': 'RGB:#0033A0'
+    })
+    .setExactProduct('PFC', undefined, (p) =&gt; p.addVariant('10086021'))
+    .addExactPrinting('front', 'PAD03')
+    .open({ mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">3 — JSON editor arguments (single color &rarr; automatic logo recoloring)</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
+    openMode: 'Create',
+    dataMode: 'Exact',
+    printJob: {
+        logo: { url: 'https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg' },
+        customProperties: {
+            'EDITOR:DESIGN_COLOR_1': 'CMYK:#00F8D000'   // = PANTONE 185 C
+        },
+        addProducts: { supplierCode: 'PFC', variants: [{ productCode: '10086021' }] },
+        addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }]
+    }
+}, { mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">Encoding a CMYK value</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>// CMYK:#CCMMYYKK — each channel is one byte (00 = 0 %, FF = 100 %); the last pair is black, not alpha.
+const toByte = (percent) =&gt; Math.round(percent * 255 / 100).toString(16).padStart(2, '0').toUpperCase();
+const cmyk = 'CMYK:#' + [0, 97, 82, 0].map(toByte).join('');   // 'CMYK:#00F7D100'
+// Note: rounding percentages does not guarantee an exact color-map match (185 C is CMYK:#00F8D000).</code></pre>
+</div>
+</body>
+</html>
