@@ -21,14 +21,11 @@
                 // Listen for logo selected events
                 td.subscribeDesignerEvent('logo', 'selected', (event) => {
                     console.log('Logo selected:', event);
-                    if (event.entityGuid) {
-                        currentLogo = event.entityGuid;
-                        updateLogoDisplay(`Logo selected: ${event.entityGuid}`);
-                    } else {
-                        currentLogo = null;
-                        updateLogoDisplay('No logo selected');
-                    }
+                    const logoGuid = (event.detail && event.detail.logoGuid) || event.entityGuid;
+                    setCurrentLogo(logoGuid || null);
                 });
+                // Restore a logo selected earlier (kept by the script between page loads)
+                td.getLogo().then((logo) => setCurrentLogo(logo ? logo.logoGuid : null));
             } else {
                 console.error("TronDesigner API not found!");
             }
@@ -41,20 +38,28 @@
             }
         };
 
+        // Remembers the selected logo; the "Open with Logo (GUID)" button needs one
+        const setCurrentLogo = (logoGuid) => {
+            currentLogo = logoGuid;
+            updateLogoDisplay(logoGuid ? `Logo selected: ${logoGuid}` : 'No logo selected');
+            const button = document.getElementById('open-with-logo-guid');
+            button.disabled = !logoGuid;
+            button.title = logoGuid ? '' : 'Open the gallery and select a logo first';
+            document.getElementById('logo-guid-hint').textContent = logoGuid
+                ? `Preselect logo ${logoGuid}`
+                : 'Select a logo in the gallery first';
+        };
+
         // Open logo upload dialog
         const openUpload = () => {
             console.log("Opening logo upload...");
-            const td = window.tronDesigner;
-            td.setOpenMode("OpenUpload");
-            td.open({mode: "dialog"});
+            window.tronDesigner.openLogoUpload({mode: "dialog"});
         };
 
         // Open logo gallery dialog
         const openGallery = () => {
             console.log("Opening logo gallery...");
-            const td = window.tronDesigner;
-            td.setOpenMode("OpenGallery");
-            td.open({mode: "dialog"});
+            window.tronDesigner.openLogoGallery({mode: "dialog"});
         };
 
         // Set logo programmatically
@@ -66,13 +71,13 @@
 
             console.log("Setting logo:", currentLogo);
             const td = window.tronDesigner;
-            td.setLogo(currentLogo
+            td.setLogo(currentLogo)
                 .then(() => {
                     console.log("Logo set successfully!");
                 })
                 .catch((error) => {
                     console.error("Error setting logo:", error);
-                }));
+                });
         };
 
         // Get current logo
@@ -81,7 +86,7 @@
             td.getLogo()
                 .then((logo) => {
                     console.log("Current logo:", logo);
-                    updateLogoDisplay(`Current logo: ${logo}`);
+                    updateLogoDisplay(logo ? `Current logo: ${logo.logoGuid}` : 'No logo selected');
                 })
         };
 
@@ -92,7 +97,7 @@
             td.clearLogo()
                 .then(() => {
                     console.log("Logo cleared successfully!");
-                    updateLogoDisplay('No logo selected');
+                    setCurrentLogo(null);
                 })
                 .catch((error) => {
                     console.error("Error clearing logo:", error);
@@ -100,15 +105,21 @@
         };
 
         // Open designer with logo preselected via GUID
+        // The GUID must exist in the TronDesigner environment you integrate with,
+        // so this example uses the logo selected in the gallery (see "Open Gallery Dialog").
         const openWithLogoGuid = () => {
-            console.log("Opening with preselected logo (GUID)...");
+            if (!currentLogo) {
+                console.warn("No logo selected - open the gallery and select a logo first.");
+                return;
+            }
+            console.log("Opening with preselected logo (GUID)...", currentLogo);
             const td = window.tronDesigner;
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
                 "printJob": {
                     "logo": {
-                        "guid": "610c6f2d-bd71-419c-a335-b305c3af7e5f"
+                        "guid": currentLogo
                     },
                     "addPrintings": [
                         {
@@ -137,7 +148,7 @@
                 "dataMode": "Exact",
                 "printJob": {
                     "logo": {
-                        "url": "https://www.promotron.com/assets/img/trondesigner/logo.svg"
+                        "url": "https://www.promotron.com/media/brand/tronshop/horizontal-color.svg"
                     },
                     "addPrintings": [
                         {
@@ -170,14 +181,14 @@
                             "printPositionCode": "front",
                             "printTechnologyCode": "PAD03",
                             "logo": {
-                                "url": "https://www.promotron.com/assets/img/trondesigner/logo.svg"
+                                "url": "https://www.promotron.com/media/brand/tronshop/horizontal-color.svg"
                             },
                         },
                         {
                             "printPositionCode": "wrap",
                             "printTechnologyCode": "LASR03",
                             "logo": {
-                                "url": "https://www.promotron.com/assets/img/tronmanager/logo.png"
+                                "url": "https://www.promotron.com/media/brand/tronmanager/horizontal-color.svg"
                             },
                         }
                     ],
@@ -202,15 +213,22 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
-                Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Logos.html" target="_blank">Logos</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
+</div>
+<div class="info-box">
+    <h3>Logo Features</h3>
+    <ul>
+        <li><code>openLogoUpload()</code> / <code>openLogoGallery()</code> open only the logo dialog. The uploaded or picked logo becomes the
+            customer's <em>selected logo</em> and the <code>logo</code> / <code>selected</code> event fires.</li>
+        <li><code>getLogo()</code>, <code>setLogo(guid)</code> and <code>clearLogo()</code> read and change the selected logo. It is used as the default logo
+            of the next print job and by logo visualizations.</li>
+        <li><code>printJob.logo</code> (or a <code>logo</code> per printing) preselects a logo by <code>guid</code> or <code>url</code>. A GUID must belong to a logo of
+            the current customer in the same TronDesigner environment - this page therefore uses the logo you select in the gallery.</li>
+    </ul>
 </div>
 <div class="example">
     <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0"
@@ -250,10 +268,11 @@
         </button>
 
         <h5 style="margin-top: 20px; margin-bottom: 10px;">Preselect Logo Examples</h5>
-        <button class="btn" onclick="openWithLogoGuid()">
+        <button class="btn" id="open-with-logo-guid" onclick="openWithLogoGuid()" disabled
+                title="Open the gallery and select a logo first">
             Open with Logo (GUID)
             <br>
-            <small>Preselect logo by GUID</small>
+            <small id="logo-guid-hint">Select a logo in the gallery first</small>
         </button>
         <button class="btn" onclick="openWithLogoUrl()">
             Open with Logo (URL)
@@ -266,6 +285,34 @@
             <small>Different logos per printing</small>
         </button>
     </div>
+</div>
+
+<div style="margin: 30px 10px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
+
+// Remember the logo the customer selects or uploads (entityGuid is null when the selection was cleared)
+td.subscribeDesignerEvent('logo', 'selected', (event) =&gt; {
+    selectedLogoGuid = event.entityGuid;
+});
+
+// Only the logo dialog
+td.openLogoGallery({ mode: 'dialog' });     // or td.openLogoUpload({ mode: 'dialog' })
+
+// The current selected logo
+const logo = await td.getLogo();             // ILogoDTO or undefined
+console.log(logo?.logoGuid);
+
+// Preselect a logo in a new print job - by GUID or by URL
+td.openDesigner({
+    openMode: 'Create',
+    dataMode: 'Exact',
+    printJob: {
+        logo: { guid: selectedLogoGuid },      // or { url: 'https://www.promotron.com/media/brand/tronshop/horizontal-color.svg' }
+        addProducts: { supplierCode: 'PFC', variants: [{ productCode: '10086021' }] },
+        addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }]
+    }
+}, { mode: 'dialog' });</code></pre>
 </div>
 </body>
 </html>

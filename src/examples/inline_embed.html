@@ -44,11 +44,6 @@
             container.classList.add('active');
             container.innerHTML = '';
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -70,12 +65,13 @@
                 },
                 "editor": {
                     "result": {
-                        "resultAction": "CLOSE"
+                        "resultAction": "Close"
                     }
                 }
             }, {
                 mode: "container",
-                container: container
+                container: container,
+                onClose: onEditorClosed
             });
         }
 
@@ -86,8 +82,6 @@
 
             container.classList.add('active');
             container.innerHTML = '';
-
-            td.setPartialProduct('PFC', '10086');
 
             td.openDesigner({
                 "openMode": "Create",
@@ -103,8 +97,15 @@
                 }
             }, {
                 mode: "container",
-                container: container
+                container: container,
+                onClose: onEditorClosed
             });
+        }
+
+        // Called after the script has removed the editor from the container
+        const onEditorClosed = (reason) => {
+            console.log("Editor closed:", reason);
+            td_clear_container();
         }
 
         const td_clear_container = () => {
@@ -121,9 +122,8 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Dialog-and-inline-display.html" target="_blank">Dialog and inline display</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -133,7 +133,7 @@
     <h3>Inline Embed Mode</h3>
     <p>Inline Mode embeds the TronDesigner editor directly into a page element, allowing seamless integration within your page layout.</p>
     <p><strong>Use cases:</strong> Product detail pages, configurators, seamless design experience, dashboard integrations</p>
-    <p><strong>Configuration:</strong> <code>{mode: "inline", target: "#element-id"}</code></p>
+    <p><strong>Configuration:</strong> <code>{mode: "container", container: document.getElementById("element-id")}</code></p>
 </div>
 
 <div class="control-panel">
@@ -172,10 +172,13 @@
     <h3>Implementation Notes</h3>
     <ul style="line-height: 1.8;">
         <li>The editor is embedded directly in the <code>#editor-container</code> element</li>
-        <li>No modal overlay or popup window is used</li>
+        <li>The page isn't locked - no overlay or scroll lock is added around the editor</li>
+        <li>The editor's own dialogs (variant/print option selection in Partial mode, logo upload, final verification, errors) still cover the whole window</li>
+        <li>Give the container a height - the editor fills 100% of its width and height</li>
         <li>You can style the container to match your page design</li>
         <li>The editor adapts to the container dimensions</li>
-        <li>Multiple inline editors can exist on the same page (different containers)</li>
+        <li>One editor per container; several inline editors can be open in different containers</li>
+        <li>There is no method to close the editor from code - use <code>onClose</code> to react when the customer closes it</li>
         <li>Ideal for product configurators and seamless workflows</li>
     </ul>
 
@@ -185,8 +188,9 @@
     "dataMode": "Exact",
     "printJob": { /* configuration */ }
 }, {
-    mode: "inline",
-    target: "#editor-container"
+    mode: "container",
+    container: document.getElementById("editor-container"),
+    onClose: (reason) =&gt; console.log("Editor closed:", reason)
 });</code></pre>
 </div>
 </body>

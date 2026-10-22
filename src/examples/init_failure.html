@@ -77,7 +77,7 @@
             background: #a93226;
         }
 
-        .designer-btn-wrapper {
+        .designer-btn-wrapper.disabled {
             opacity: 0.4;
             pointer-events: none;
         }
@@ -89,9 +89,12 @@
 
         function onScriptInitFailed(error) {
             console.error('Script initialization failed cause:', error);
-            const message = error && error.cause ? error.cause : String(error);
+            // error.cause holds the server's reason, e.g. "API key is invalid: ..."
+            const message = (error && (error.cause || error.message)) || String(error);
             document.getElementById('error-message').textContent = message;
             document.getElementById('error-overlay').classList.add('visible');
+            // Show the designer button as unavailable
+            document.querySelector('.designer-btn-wrapper').classList.add('disabled');
         }
 
         function closeNotification() {
@@ -106,9 +109,9 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Loading-the-integration-script.html" target="_blank">Loading the script</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Debugging-and-error-handling.html" target="_blank">Debugging and error handling</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -116,8 +119,10 @@
 
 <div class="info-box">
     <h3>Init Failure Handling</h3>
-    <p>This example intentionally uses an invalid API key (<code>INVALID_KEY_TO_TRIGGER_FAILURE</code>) so that the SDK raises a <code>scriptInitFailed</code> event on load.</p>
-    <p>The <code>data-td-script-init-failed-callback</code> attribute points at <code>onScriptInitFailed</code>, which displays a modal popup with the error message. The designer button is shown as disabled to make it clear the integration is unavailable.</p>
+    <p>This example intentionally uses an invalid API key (<code>INVALID_KEY_TO_TRIGGER_FAILURE</code>) so that the script's initialization fails on load. The script then calls the
+        <code>data-td-script-init-failed-callback</code> function, dispatches a <code>userInitFailed</code> event on the <code>&lt;script&gt;</code> element,
+        and <code>getInitializing()</code> rejects with the same error.</p>
+    <p>The <code>data-td-script-init-failed-callback</code> attribute points at <code>onScriptInitFailed</code>, which displays a modal popup with the server's reason (<code>error.cause</code>) and marks the designer button as disabled to make it clear the integration is unavailable.</p>
     <p><strong>Callback attributes used here:</strong></p>
     <ul>
         <li><code>data-td-script-initialized-callback</code></li>
@@ -172,9 +177,11 @@
 
 &lt;script&gt;
     function onScriptInitFailed(error) {
-        const message = error &amp;&amp; error.message ? error.message : String(error);
+        // error.cause holds the server's reason, error.message the technical one
+        const message = (error &amp;&amp; (error.cause || error.message)) || String(error);
         document.getElementById('error-message').textContent = message;
         document.getElementById('error-overlay').classList.add('visible');
+        document.querySelector('.designer-btn-wrapper').classList.add('disabled');
     }
 
     function closeNotification() {

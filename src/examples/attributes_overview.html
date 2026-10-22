@@ -133,6 +133,18 @@
             updateEventLog();
         }
 
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        }
+
+        // Long strings (e.g. the SVG of a text) are shortened for the log
+        function formatData(data) {
+            if (typeof data === 'string') return data;
+            if (data instanceof Blob) return `Blob (${data.type}, ${data.size} bytes)`;
+            return JSON.stringify(data, (key, value) =>
+                typeof value === 'string' && value.length > 200 ? value.slice(0, 200) + '… (' + value.length + ' chars)' : value, 2);
+        }
+
         function updateEventLog() {
             const logContainer = document.getElementById('event-log');
             if (!logContainer) return;
@@ -140,10 +152,10 @@
             logContainer.innerHTML = eventLog.map(event => `
                 <div class="event-entry">
                     <span class="event-time">[${event.timestamp}]</span>
-                    <span class="event-type">${event.type}</span>.<span class="event-action">${event.action}</span>
-                    ${event.message ? '- ' + event.message : ''}
+                    <span class="event-type">${escapeHtml(event.type)}</span>.<span class="event-action">${escapeHtml(event.action)}</span>
+                    ${event.message ? '- ' + escapeHtml(event.message) : ''}
                     ${event.data !== null && event.data !== undefined
-                        ? `<div class="event-data">${typeof event.data === 'string' ? event.data : JSON.stringify(event.data, null, 2)}</div>`
+                        ? `<div class="event-data">${escapeHtml(formatData(event.data))}</div>`
                         : ''}
                 </div>
             `).join('');
@@ -163,9 +175,9 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/HTML-data-attributes.html" target="_blank">HTML data attributes</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Data-attributes-reference.html" target="_blank">Data attributes reference</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -175,7 +187,7 @@
     <h3>Attributes - Overview</h3>
     <p>This example wires up the integration entirely through HTML <code>data-*</code> attributes — no JavaScript event subscription calls.</p>
     <p>The action buttons use <code>data-td-action</code> + product/printing/print-job attributes to open the designer. The script element uses <code>data-td-*-callback</code> attributes to point at globally available functions for every event.</p>
-    <p><strong>Flow:</strong> click <em>Step 1</em> to create, finish in the editor, the <code>printJob.created</code> callback fires; we copy the GUID into the Step 2 button's <code>data-td-print-job-guid</code> and call <code>tronDesigner.refreshRegisteredElements()</code> so the SDK binds its click handler. Step 2 then opens the same job in <code>OpenEdit</code> mode — purely via attributes.</p>
+    <p><strong>Flow:</strong> click <em>Step 1</em> to create, the <code>printJob.created</code> callback fires on the first save (a proofreading, a Save button or the final confirmation - later saves fire <code>printJob.updated</code>); we copy the GUID into the Step 2 button's <code>data-td-print-job-guid</code> and call <code>tronDesigner.refreshRegisteredElements()</code> so the SDK binds its click handler. Step 2 then opens the same job in <code>OpenEdit</code> mode — purely via attributes.</p>
     <p><strong>Script-element callback attributes used here:</strong></p>
     <ul>
         <li><code>data-td-script-initialized-callback</code></li>

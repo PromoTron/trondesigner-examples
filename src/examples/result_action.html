@@ -11,15 +11,18 @@
             data-td-api-key="{TD_API_KEY}"
     ></script>
     <script>
+        const logClose = (resultAction) => (reason, redirectUrl) => {
+            const line = `[${new Date().toLocaleTimeString()}] resultAction "${resultAction}" - editor closed, reason: ${reason}`
+                + (redirectUrl ? `, redirectUrl: ${redirectUrl}` : '');
+            const log = document.getElementById('close-log');
+            log.textContent = line + '\n' + log.textContent;
+        };
+
+        // `result` becomes `editor.result` of the editor arguments.
+        // resultAction values are case-sensitive: 'None', 'Close' or 'Dialog' - any other value is treated as 'None'.
         const td_open = (result) => {
-            console.log("Opening Tron Designer...");
-            const td = window.tronDesigner;
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-            console.log(td.argsBuilder.build())
-            td.openDesigner({
+            console.log("Opening Tron Designer...", result);
+            window.tronDesigner.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
                 "printJob": {
@@ -41,15 +44,15 @@
                 "editor": {
                     "result": result
                 }
-            }, {mode: "dialog"});
+            }, {mode: "dialog", onClose: logClose(result.resultAction)});
         }
 
         const td_open_result_none = () => {
-            td_open({resultAction: "NONE"});
+            td_open({resultAction: 'None'});
         }
 
         const td_open_result_close = () => {
-            td_open({resultAction: "CLOSE"});
+            td_open({resultAction: 'Close'});
         }
 
         const td_open_result_dialog = () => {
@@ -66,7 +69,7 @@
             });
         }
     </script>
-    <title>Tron Designer Integration - JS Builder Basic Example</title>
+    <title>Tron Designer Integration - Result Action Example</title>
 </head>
 <body>
 <div class="header">
@@ -74,13 +77,26 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Result-actions.html" target="_blank">Result actions</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
 </div>
+
+<div class="info-box">
+    <h3>Result Actions</h3>
+    <p>The result action decides what the editor does after the customer confirms the final verification and the print job has been saved.
+        Design something, click <strong>Continue</strong>, approve the printing and click <strong>Final Confirm</strong>:</p>
+    <ul>
+        <li><code>'None'</code> - the editor stays open; the customer closes it with <strong>&times;</strong>.</li>
+        <li><code>'Close'</code> - the editor closes with the reason <code>'Confirmed'</code> (and navigates to <code>redirectUrl</code>, if set).</li>
+        <li><code>'Dialog'</code> - a small dialog with your title, message and button; the button closes the editor.</li>
+    </ul>
+    <p>The values are case-sensitive - <code>'CLOSE'</code> or <code>'none'</code> are treated as <code>'None'</code>.
+        The close reason passed to <code>onClose</code> is logged below.</p>
+</div>
+
 <div class="examples">
     <div class="example">
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
@@ -115,6 +131,55 @@
             </button>
         </div>
     </div>
+</div>
+
+<div style="margin: 20px 10px;">
+    <h3>onClose log</h3>
+    <pre id="close-log" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; min-height: 60px; white-space: pre-wrap;"></pre>
+</div>
+
+<div style="margin: 30px 10px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+
+    <h4>JSON - editor.result</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
+    openMode: 'Create',
+    dataMode: 'Exact',
+    printJob: {
+        addProducts: { supplierCode: 'PFC', variants: [{ productCode: '10086021' }] },
+        addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }]
+    },
+    editor: {
+        result: {
+            resultAction: 'Dialog',          // 'None' | 'Close' | 'Dialog' (case-sensitive)
+            redirectUrl: '/cart',            // optional, for 'Close' and 'Dialog'
+            closeDialog: [
+                { language: 'en', title: 'Print Graphics ready', message: 'Your design has been saved.', buttonText: 'Continue to cart' }
+            ]
+        }
+    }
+}, {
+    mode: 'dialog',
+    onClose: (reason, redirectUrl) =&gt; console.log('Editor closed:', reason, redirectUrl)
+});</code></pre>
+
+    <h4 style="margin-top: 20px;">JS builder</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner
+    .setExactProduct('PFC', undefined, (b) =&gt; b.addVariant('10086021'))
+    .addExactPrinting('front', 'PAD03')
+    .setResultActionCloseEditor()               // or setResultActionNone() / setResultActionShowDialog(dialogs, redirectUrl)
+    .open({ mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">HTML data attributes</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;button data-td-action="OpenCreate"
+        data-td-supplier-code="PFC"
+        data-td-product-code="10086021"
+        data-td-print-position-code="front"
+        data-td-print-technology-code="PAD03"
+        data-td-result-action="Close"
+        data-td-result-redirect-url="/cart"&gt;
+    Design your print
+&lt;/button&gt;</code></pre>
 </div>
 </body>
 </html>

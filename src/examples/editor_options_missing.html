@@ -436,10 +436,8 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/articles/1831653-editor-arguments#ta1ew2ec4a2" target="_blank">Editor Arguments</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Editor-arguments.html" target="_blank">Editor arguments</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -460,9 +458,9 @@
         </thead>
         <tbody>
         <tr>
-            <td><code>None</code></td>
-            <td>Dialog is not shown when variants are specified.</td>
-            <td>Dialog is not shown when print options are specified.</td>
+            <td><code>None</code> (default)</td>
+            <td>The variant selector is shown only when no variants are provided or a provided one is not found - and it then offers <strong>only the variants that were found</strong>.</td>
+            <td>The print option selector is shown only when no print options are provided or a provided one is not found - and it then offers <strong>only the print options that were found</strong>.</td>
         </tr>
         <tr>
             <td><code>Selected</code></td>
@@ -471,8 +469,8 @@
         </tr>
         <tr>
             <td><code>Missing</code></td>
-            <td>The variant selector is shown <strong>only when one or more provided variants are not found</strong>. The user can then remove or add any product variant.</td>
-            <td>The print option selector is shown <strong>only when one or more provided print options are not found</strong>.</td>
+            <td>Shown in the same cases as <code>None</code>, but it offers <strong>all product variants</strong> with the found ones preselected, so the user can replace the missing one.</td>
+            <td>Shown in the same cases as <code>None</code>, but it offers <strong>all print options</strong> with the found ones preselected.</td>
         </tr>
         <tr>
             <td><code>All</code></td>
@@ -484,9 +482,10 @@
 
     <p style="margin-top: 12px;"><code>Missing</code> is the safety net for catalogue drift: as long as every code your shop sends still exists, the user goes
         straight into the design. As soon as a code disappears - a discontinued colour, a renamed print position - the editor falls back to a selector
-        instead of failing or quietly dropping the item.</p>
-    <p><strong>Note:</strong> the documentation marks <code>Missing</code> as <em>Coming Soon</em>. On an instance where it is not deployed yet, the
-        editor may fall back to its default behaviour - compare with the other values using the switches below.</p>
+        instead of failing, and unlike <code>None</code> it lets the user pick a replacement from everything the product offers.</p>
+    <p><strong>Note:</strong> the selectors only exist in the <code>Partial</code> data mode. In <code>Exact</code> mode the variant selector is never
+        shown and a code that isn't found is a fatal error; only <code>showSelectedPrintOptions: 'Selected'</code> or <code>'All'</code> shows a selector there.
+        Edit and View mode ignore these options.</p>
     <p>All five scenarios use the same Teak notebook (<code>PFC</code>) with 3 variants and 2 printings. Wrong codes are marked with an
         <code>XX</code> suffix so they cannot be found in the catalogue. Every button opens a <strong>new</strong> print job in <code>Create</code> mode.</p>
 </div>
@@ -535,7 +534,7 @@
     <h4>Editor arguments with <code>Missing</code></h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
     openMode: "Create",
-    dataMode: "Exact",
+    dataMode: "Partial",                      // selectors are only available in Partial mode
     editorOptions: {
         showSelectedVariants: "Missing",      // None | Selected | Missing | All
         showSelectedPrintOptions: "Missing"   // None | Selected | Missing | All
@@ -592,22 +591,20 @@ addPrintings: [
 ]</code></pre>
 
     <h4 style="margin-top: 20px;">Same options with the JS builder</h4>
-    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
-
-td.setExactProduct("PFC", undefined, (b) => {
-    b.addVariant("10601321");
-    b.addVariant("10601301");
-    b.addVariant("10601331");
-});
-td.addExactPrinting("front", "GPE01");
-td.addExactPrinting("back", "GPE01");
-
-td.argsBuilder.setEditorOptions({
-    showSelectedVariants: "Missing",
-    showSelectedPrintOptions: "Missing"
-});
-
-td.open({ mode: "dialog" });</code></pre>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner
+    .setExactProduct("PFC", undefined, (b) =&gt; {
+        b.addVariant("10601321");
+        b.addVariant("10601301");
+        b.addVariant("10601331");
+    })
+    .addExactPrinting("front", "GPE01")
+    .addExactPrinting("back", "GPE01")
+    .setDataMode("Partial")                   // after the product setter - it would set Exact
+    .setEditorOptions({
+        showSelectedVariants: "Missing",
+        showSelectedPrintOptions: "Missing"
+    })
+    .open({ mode: "dialog" });</code></pre>
 
     <p style="font-size: 13px; color: #555;">If <code>editorOptions</code> is omitted entirely, the SDK sends
         <code>{ showSelectedVariants: "None", showSelectedPrintOptions: "None" }</code> - the same applies to each of the two keys individually.</p>

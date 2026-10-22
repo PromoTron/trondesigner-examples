@@ -11,53 +11,45 @@
             data-td-api-key="{TD_API_KEY}"
     ></script>
     <script>
+        // Corgi short sleeve men's t-shirt (model R2200) - two color variants
+        const addVariants = (b) => {
+            b.addVariant('R2200D94');
+            b.addVariant('R2200E13');
+        };
+
         const td_open_two_positions = () => {
             console.log("Opening with two print positions...");
-            const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('R2200D94');
-                b.addVariant('R2200E13');
-            });
-            td.addExactPrinting('Left chest', 'MR07');
-            td.addExactPrinting('Right chest', 'MR07');
-
-            td.open({mode: "dialog"});
+            window.tronDesigner
+                .setExactProduct('PFC', undefined, addVariants)
+                .addExactPrinting('LEFTCHEST', 'MR07')
+                .addExactPrinting('RIGHTCHEST', 'MR07')
+                .open({mode: "dialog"});
         }
 
         const td_open_multiple_positions = () => {
             console.log("Opening with multiple print positions...");
-            const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('R2200D94');
-                b.addVariant('R2200E13');
-            });
-            td.addExactPrinting('Left chest', 'MR07');
-            td.addExactPrinting('Right chest', 'MR07');
-            td.addExactPrinting('Left bicep', 'MR07');
-            td.addExactPrinting('Right bicep', 'MR07');
-
-            td.open({mode: "dialog"});
+            window.tronDesigner
+                .setExactProduct('PFC', undefined, addVariants)
+                .addExactPrinting('LEFTCHEST', 'MR07')
+                .addExactPrinting('RIGHTCHEST', 'MR07')
+                .addExactPrinting('LEFTBICEP', 'MR07')
+                .addExactPrinting('RIGHTBICEP', 'MR07')
+                .open({mode: "dialog"});
         }
 
         const td_open_partial_multiple = () => {
             console.log("Opening partial mode with multiple positions...");
-            const td = window.tronDesigner;
-
-            td.setPartialProduct('PFC', '10086');
-
-            td.openDesigner({
+            window.tronDesigner.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Partial",
                 "printJob": {
                     "addPrintings": [
                         {
-                            "printPositionCode": "Left chest",
+                            "printPositionCode": "LEFTCHEST",
                             "printTechnologyCode": "MR07"
                         },
                         {
-                            "printPositionCode": "Right chest",
+                            "printPositionCode": "RIGHTCHEST",
                             "printTechnologyCode": "MR07"
                         }
                     ],
@@ -77,19 +69,14 @@
 
             // Simulate dynamic configuration from user selection
             const positions = [
-                {position: 'Left chest', technology: 'MR07'},
-                {position: 'Right chest', technology: 'MR07'},
+                {position: 'LEFTCHEST', technology: 'MR07'},
+                {position: 'RIGHTCHEST', technology: 'MR07'},
             ];
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('R2200D94');
-                b.addVariant('R2200E13');
-            });
+            td.setExactProduct('PFC', undefined, addVariants);
+            positions.forEach(p => td.addExactPrinting(p.position, p.technology));
 
-            positions.forEach(p => {
-                td.addExactPrinting(p.position, p.technology);
-            });
-
+            // open() uses everything collected on the builder and then resets it
             td.open({mode: "dialog"});
         }
     </script>
@@ -102,12 +89,9 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
-                Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/JavaScript-builder-API.html" target="_blank">JavaScript builder API</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Editor-arguments.html" target="_blank">Editor arguments</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -203,52 +187,54 @@
     <h3>Implementation Examples</h3>
 
     <h4>1. Using JS Builder API</h4>
-    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
-
-td.setExactProduct('PFC', undefined, (b) => {
-    b.addVariant('10086021');
-});
-
-// Add multiple print positions
-td.addExactPrinting('front', 'PAD03');
-td.addExactPrinting('back', 'PAD03');
-td.addExactPrinting('left', 'SCREEN01');
-
-td.openDesigner(td.argsBuilder.build(), {mode: "dialog"});</code></pre>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner
+    .setExactProduct('PFC', undefined, (b) =&gt; {
+        b.addVariant('R2200D94');
+        b.addVariant('R2200E13');
+    })
+    // Add multiple print positions
+    .addExactPrinting('LEFTCHEST', 'MR07')
+    .addExactPrinting('RIGHTCHEST', 'MR07')
+    .open({mode: "dialog"});</code></pre>
 
     <h4 style="margin-top: 20px;">2. Using JSON Configuration</h4>
-    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.openDesigner({
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
     "openMode": "Create",
-    "dataMode": "Exact",
+    "dataMode": "Partial",
     "printJob": {
         "addPrintings": [
             {
-                "printPositionCode": "front",
-                "printTechnologyCode": "PAD03"
+                "printPositionCode": "LEFTCHEST",
+                "printTechnologyCode": "MR07"
             },
             {
-                "printPositionCode": "back",
-                "printTechnologyCode": "PAD03"
+                "printPositionCode": "RIGHTCHEST",
+                "printTechnologyCode": "MR07"
             }
         ],
         "addProducts": {
             "supplierCode": "PFC",
-            "variants": [{"productCode": "10086021"}]
+            "model": {"modelCode": "R2200"}
         }
     }
 }, {mode: "dialog"});</code></pre>
 
     <h4 style="margin-top: 20px;">3. Dynamic from Array</h4>
-    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const positions = [
-        {position: 'Left chest', technology: 'MR07'},
-        {position: 'Right chest', technology: 'MR07'},
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
+const positions = [
+    {position: 'LEFTCHEST', technology: 'MR07'},
+    {position: 'RIGHTCHEST', technology: 'MR07'},
 ];
 
-positions.forEach(p => {
-    td.addExactPrinting(p.position, p.technology);
-});
+td.setExactProduct('PFC', undefined, (b) =&gt; b.addVariant('R2200D94'));
+positions.forEach(p =&gt; td.addExactPrinting(p.position, p.technology));
 
-td.openDesigner( {mode: "dialog"});</code></pre>
+// open() uses everything collected on the builder and then resets it
+td.open({mode: "dialog"});</code></pre>
+
+    <p style="margin-top: 20px;"><strong>Note:</strong> print position and technology codes must match the codes of the product's
+        print options in TronCloud (for this t-shirt <code>LEFTCHEST</code>, <code>RIGHTCHEST</code>, <code>LEFTBICEP</code>,
+        <code>RIGHTBICEP</code>). If a print option has no mockup image, the editor first asks the customer to choose one.</p>
 
     <h4 style="margin-top: 20px;">Benefits of Multiple Printings</h4>
     <ul style="line-height: 1.8;">

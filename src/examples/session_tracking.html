@@ -26,11 +26,6 @@
             console.log("Opening with user tracking:", currentUserId);
             const td = window.tronDesigner;
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -63,11 +58,6 @@
             console.log("Opening with order tracking:", currentOrderId);
             const td = window.tronDesigner;
 
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
             td.openDesigner({
                 "openMode": "Create",
                 "dataMode": "Exact",
@@ -96,11 +86,6 @@
         const td_open_with_cart_tracking = () => {
             console.log("Opening with cart item tracking:", currentCartItemId);
             const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
 
             td.openDesigner({
                 "openMode": "Create",
@@ -132,11 +117,6 @@
         const td_open_with_custom_data = () => {
             console.log("Opening with custom metadata");
             const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
 
             const customData = {
                 campaignId: "summer2024",
@@ -172,11 +152,6 @@
         const td_open_complete_tracking = () => {
             console.log("Opening with complete tracking data");
             const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
 
             const customData = {
                 campaignId: "summer2024",
@@ -225,9 +200,8 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Customers-and-orders.html" target="_blank">Customers and orders</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -235,14 +209,21 @@
 
 <div class="info-box">
     <h3>Session Tracking & Identifiers</h3>
-    <p>Link print jobs to your application's users, orders, and cart items for seamless e-commerce integration.</p>
-    <p><strong>Available Tracking Fields:</strong></p>
+    <p>Link print jobs to your application's users, orders, and cart items. The data is saved with the print job and returned in the
+        <code>printJob</code> events, <code>getPrintJob()</code>, the REST API and webhooks.</p>
+    <p><strong>Fields of <code>printJob.customer</code>:</strong></p>
     <ul>
-        <li><code>externalUserId</code> - Your user identifier (link designs to user accounts)</li>
-        <li><code>externalOrderId</code> - Your order identifier (connect to specific orders)</li>
-        <li><code>externalCartItemId</code> - Shopping cart line item tracking</li>
-        <li><code>customData</code> - Arbitrary JSON metadata for analytics or business logic</li>
+        <li><code>customerIdentity</code>, <code>customerPerson</code>, <code>customerCompany</code>, <code>customerEmail</code> -
+            customer data saved <em>in this print job only</em> (the customer record doesn't change)</li>
+        <li><code>orderCode</code> - your order or quote number</li>
+        <li><code>orderItemCode</code> - your cart line or order line ID</li>
+        <li><code>orderTitle</code> - human-readable label, e.g. the product name in the cart</li>
     </ul>
+    <p><strong><code>printJob.customProperties</code></strong> - your own key/value metadata (string values), see the
+        <a href="custom_properties.html">Custom Properties</a> example.</p>
+    <p><strong>Logged-in users:</strong> to make the TronDesigner customer itself (with its logo gallery and print jobs) your user, set
+        <code>data-td-customer-identity</code> on the script tag or call <code>setCustomer({ customerIdentity })</code> after login -
+        see <a href="https://app.trondesigner.com/docs/documents/Customers-and-orders.html" target="_blank">Customers and orders</a>.</p>
 </div>
 
 <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
@@ -271,7 +252,7 @@
             <button class="btn" onclick="td_open_with_user_tracking()">
                 Open with User ID
                 <br>
-                <small>Track by user only</small>
+                <small>Customer data in the print job</small>
             </button>
         </div>
     </div>
@@ -283,7 +264,7 @@
             <button class="btn" onclick="td_open_with_order_tracking()">
                 Open with Order ID
                 <br>
-                <small>User + Order tracking</small>
+                <small>Order code only</small>
             </button>
         </div>
     </div>
@@ -295,7 +276,7 @@
             <button class="btn" onclick="td_open_with_cart_tracking()">
                 Open with Cart Item ID
                 <br>
-                <small>Full E-commerce tracking</small>
+                <small>Order + cart line + title</small>
             </button>
         </div>
     </div>
@@ -307,7 +288,7 @@
             <button class="btn" onclick="td_open_with_custom_data()">
                 Open with Custom Data
                 <br>
-                <small>Analytics & campaign tracking</small>
+                <small>customProperties</small>
             </button>
         </div>
     </div>
@@ -386,13 +367,32 @@
             "orderTitle": "Example Product in Cart"
         },
         "customProperties": {
-            campaignId: "summer2024",
-            source: "product_page",
-            sessionStart: "2024-06-01T12:00:00Z",
-            userSegment: "premium"
+            "campaignId": "summer2024",
+            "source": "product_page",
+            "sessionStart": "2024-06-01T12:00:00Z",
+            "userSegment": "premium"
         }
-    },
+    }
 }, {mode: "dialog"});</code></pre>
+
+    <h4 style="margin-top: 20px;">Builder and HTML alternatives</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>// Logged-in user: the customer record itself (logo gallery, print jobs)
+await window.tronDesigner.setCustomer({ customerIdentity: 'user-1234', customerEmail: 'jane@acme.example' });
+
+// Order / cart info for one print job - note the argument order: title, code, item code
+window.tronDesigner
+    .setOrderInfo('Oregon 400 ml - red', 'ORD-2026-0815', 'CART-LINE-3')
+    .setExactProduct('PFC', undefined, (p) =&gt; p.addVariant('10086021'))
+    .addExactPrinting('front', 'PAD03')
+    .open({ mode: 'dialog' });
+
+&lt;!-- HTML --&gt;
+&lt;script async src="{TD_URL}/js/website-integration.js" ...
+        data-td-customer-identity="user-1234"&gt;&lt;/script&gt;
+&lt;button data-td-action="OpenCreate" ...
+        data-td-order-code="ORD-2026-0815"
+        data-td-order-item-code="CART-LINE-3"
+        data-td-order-title="Oregon 400 ml - red"&gt;Design&lt;/button&gt;</code></pre>
 </div>
 </body>
 </html>

@@ -110,6 +110,12 @@
             background: #fff;
         }
 
+        .placeholder img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
         .placeholder {
             width: 250px;
             height: 250px;
@@ -346,9 +352,9 @@
             // content instead of only what this page asked for.
             try {
                 const printJob = await window.tronDesigner.getPrintJob(state.printJobGuid);
-                console.warn(printJob);
                 syncFromPrintJob(printJob);
                 renderSnapshot(printJob);
+                await renderPreviews(printJob);
                 logEvent('API', 'getPrintJob', `variants: ${state.variants.length}, printings: ${state.printings.length}`);
             } catch (error) {
                 logEvent('API', 'getPrintJob failed', error && error.message ? error.message : String(error));
@@ -394,6 +400,8 @@
             document.getElementById('payload-json').textContent = '(no request sent yet)';
             document.getElementById('snapshot-json').textContent = '(no print job loaded yet)';
             document.getElementById('variant-thumbs').innerHTML = '';
+            revokePreviewUrls();
+            document.getElementById('product-placeholder').innerHTML = 'Variant previews appear here<br>once the print job exists';
             logEvent('Demo', 'Reset', 'Host page state cleared - the print job itself still exists in TronDesigner.');
             render();
         }
@@ -491,16 +499,50 @@
                 }))
             }, null, 2);
 
-            // Variant preview images come straight from the API response.
-            const thumbs = ((printJob.product && printJob.product.variants) || [])
-                .filter(variant => variant.previewImageUrl)
-                .map(variant => `
-                    <figure>
-                        <img src="${variant.previewImageUrl}" alt="${variant.title || variant.codeSupplier}">
-                        <figcaption>${variant.codeSupplier}</figcaption>
-                    </figure>`)
-                .join('');
-            document.getElementById('variant-thumbs').innerHTML = thumbs;
+        }
+
+        // Print job previews: the product variant with the designed motive, one image per printing and variant.
+        // getPrintingImage() returns a Blob; variant.previewImageUrl would only be the plain product photo.
+        let previewUrls = [];
+
+        function revokePreviewUrls() {
+            previewUrls.forEach(url => URL.revokeObjectURL(url));
+            previewUrls = [];
+        }
+
+        async function renderPreviews(printJob) {
+            const variants = (printJob.product && printJob.product.variants) || [];
+            const printings = printJob.printings || [];
+            const previews = [];
+
+            for (const printing of printings) {
+                const printData = printing.printData || {};
+                for (const variant of variants) {
+                    try {
+                        const blob = await window.tronDesigner.getPrintingImage(printJob.printJobGuid, printing.printingGuid, variant.codeSupplier);
+                        if (!blob || !blob.size) continue;
+                        previews.push({
+                            url: URL.createObjectURL(blob),
+                            caption: `${variant.codeSupplier} - ${printData.positionName || printData.positionCodePtn} / ${printData.technologyCodeDisplay || printData.technologyCodePtn}`,
+                            alt: variant.title || variant.codeSupplier
+                        });
+                    } catch (error) {
+                        logEvent('API', 'getPrintingImage failed', `${variant.codeSupplier} / ${printing.printingGuid}: ${error && error.message ? error.message : error}`);
+                    }
+                }
+            }
+
+            revokePreviewUrls();
+            previewUrls = previews.map(preview => preview.url);
+            document.getElementById('variant-thumbs').innerHTML = previews.map(preview => `
+                <figure>
+                    <img src="${preview.url}" alt="${preview.alt}">
+                    <figcaption>${preview.caption}</figcaption>
+                </figure>`).join('');
+            if (previews.length) {
+                document.getElementById('product-placeholder').innerHTML = `<img src="${previews[0].url}" alt="${previews[0].alt}">`;
+            }
+            logEvent('API', 'getPrintingImage', `${previews.length} preview(s) loaded`);
         }
 
         // ---------------------------------------------------------------
@@ -545,9 +587,9 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Open-modes.html" target="_blank">Open modes</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Editor-arguments.html" target="_blank">Editor arguments</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -565,8 +607,9 @@
         <li><strong>Remove</strong> - the same <code>Edit</code> call with <code>removeProducts</code> / <code>removePrintings</code> takes them out again.</li>
     </ol>
     <p><strong>Key rule:</strong> in <code>Edit</code> mode you send only the <em>delta</em>. Variants and printings that are already part of the
-        print job are never repeated in the arguments - listing them again would add them a second time. The print job is identified by
-        <code>printJob.printJobGuid</code>.</p>
+        print job don't need to be repeated: a variant that is already there only gets its quantity, code and name updated, and a printing that is
+        already there is skipped. New variants and printings are looked up for the print job's supplier, so no supplier is needed. The print job is
+        identified by <code>printJob.printJobGuid</code>.</p>
     <p>After every editor session the page calls <code>tronDesigner.getPrintJob(guid)</code> and shows what the print job really contains.</p>
 </div>
 
@@ -657,7 +700,7 @@
         </div>
     </div>
 
-    <h3 style="margin-top: 25px;">Variant previews from the print job</h3>
+    <h3 style="margin-top: 25px;">Print job previews (<code>getPrintingImage</code>)</h3>
     <div class="thumbs" id="variant-thumbs"></div>
 </div>
 
@@ -757,13 +800,14 @@ td.openDesigner({
 }, { mode: "dialog" });</code></pre>
 
     <h4 style="margin-top: 20px;">Same operations with the JS builder</h4>
-    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.setPrintJob(printJobGuid, "Edit");            // openMode + printJobGuid
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>td.setPrintJob(printJobGuid, "Edit")             // openMode + printJobGuid
+  .setDataMode("Exact");                         // setPrintJob() sets no data mode - Exact keeps the structure fixed
 td.addProductVariantsToPrintJob({ productCode: "10601301" },
                                 { productCode: "10601331" });
 td.addPrintingToPrintJob("back", "GPE01");
 td.open({ mode: "dialog" });
 
-td.setPrintJob(printJobGuid, "Edit");
+td.setPrintJob(printJobGuid, "Edit").setDataMode("Exact");
 td.removeProductVariantsFromPrintJob(["10601301", "10601331"]);
 td.removePrintingFromPrintJob("back", "GPE01");
 td.open({ mode: "dialog" });</code></pre>
@@ -771,8 +815,12 @@ td.open({ mode: "dialog" });</code></pre>
     <h4 style="margin-top: 20px;">Reading the result back</h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const printJob = await td.getPrintJob(printJobGuid);
 
-printJob.product.variants.forEach(v => console.log(v.codeSupplier, v.title, v.previewImageUrl));
-printJob.printings.forEach(p => console.log(p.printingGuid, p.printData));</code></pre>
+printJob.product.variants.forEach(v => console.log(v.codeSupplier, v.title));
+printJob.printings.forEach(p => console.log(p.printingGuid, p.printData));
+
+// Preview of one printing on one variant (product with the designed motive)
+const blob = await td.getPrintingImage(printJobGuid, printJob.printings[0].printingGuid, '10601321');
+document.getElementById('preview').src = URL.createObjectURL(blob);</code></pre>
 </div>
 </body>
 </html>
