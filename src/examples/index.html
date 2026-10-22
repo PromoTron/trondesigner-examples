@@ -17,13 +17,10 @@
         <h1>
             <span>TronDesigner</span> - Integration Examples<br>
             <small>Docs:
-                <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios"
-                    target="_blank">Scenarios</a> &nbsp;|&nbsp;
-                <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic"
-                    target="_blank">Modes</a> &nbsp;|&nbsp;
-                <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide"
-                    target="_blank">Developer Guide</a>
-            </small>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Examples.html" target="_blank">Examples overview</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Quick-start.html" target="_blank">Quick start</a>
+        </small>
         </h1>
         <a href="index.html">All examples</a>
     </div>
@@ -34,7 +31,7 @@
         </div>
         <div class="example">
             <h2><a href="attributes_overview.html">Attributes - Overview</a></h2>
-            <div>Opens using data attributes on a button.</div>
+            <div>Opens the editor from data attributes on a button and wires every event callback through script attributes.</div>
         </div>
         <div class="example">
             <h2><a href="init_failure.html">Init Failure Handling</a></h2>
@@ -100,7 +97,7 @@
         </div>
         <div class="example">
             <h2><a href="events_full.html">Event Handling</a></h2>
-            <div>Comprehensive event callbacks for tracking editor lifecycle and print job changes.</div>
+            <div>Subscribes to all editor events (print job, logo, text, proofreading) and logs them, plus the <code>onClose</code> reason.</div>
         </div>
         <div class="example">
             <h2><a href="session_tracking.html">Session Tracking</a></h2>
@@ -111,8 +108,16 @@
             <div>Attach arbitrary metadata to print jobs via HTML attribute, JS builder, or print job arguments, and verify the properties echo back in the created event.</div>
         </div>
         <div class="example">
+            <h2><a href="design_instructions.html">Design Instructions</a></h2>
+            <div>Show instructions to the customer in the editor via the <code>EDITOR:DESIGN_INSTRUCTION</code> custom property, and update or hide them in Edit mode.</div>
+        </div>
+        <div class="example">
+            <h2><a href="suggested_colors.html">Suggested Design Colors</a></h2>
+            <div>Offer brand colors in the logo and text color selectors via <code>EDITOR:DESIGN_COLOR_&lt;n&gt;</code> custom properties, and automatically recolor logos when exactly one color is supplied.</div>
+        </div>
+        <div class="example">
             <h2><a href="error_handling.html">Error Handling</a></h2>
-            <div>Proper error handling, validation, and recovery patterns.</div>
+            <div>Where errors are reported and how to handle them: <code>onClose('Error')</code>, <code>getInitialized()</code>, invalid custom buttons and rejected API calls.</div>
         </div>
         <div class="example">
             <h2><a href="multiple_printings.html">Multiple Printings</a></h2>
@@ -124,7 +129,7 @@
         </div>
         <div class="example">
             <h2><a href="logo_features.html">Logo Features</a></h2>
-            <div>Comprehensive logo management: upload, gallery, preselect logos via GUID or URL, and handle logo events.</div>
+            <div>Logo upload and gallery, the selected logo (<code>logo.selected</code> event), and preselecting a logo by GUID or URL.</div>
         </div>
         <div class="example">
             <h2><a href="logo_visualization.html">Logo Visualization</a></h2>

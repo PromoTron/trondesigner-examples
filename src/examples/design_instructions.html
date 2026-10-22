@@ -1,0 +1,460 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="onTdReady"
+            data-td-print-job-created-callback="onPrintJobCreated"
+            data-td-print-job-updated-callback="onPrintJobUpdated"
+    ></script>
+    <style>
+        .approach-label {
+            display: inline-block;
+            background: #0066cc;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .approach-label.edge { background: #b26b00; }
+        .approach-label.edit { background: #2d7a2d; }
+
+        .example .expected {
+            font-size: 12px;
+            color: #555;
+            max-width: 260px;
+            margin: 6px 0 10px;
+        }
+
+        .instructions-input {
+            margin: 20px 10px;
+            padding: 15px 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .instructions-input textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .event-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .event-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .event-time { color: #858585; font-size: 11px; }
+        .event-type { color: #4ec9b0; font-weight: bold; }
+        .event-action { color: #dcdcaa; }
+
+        .event-data {
+            color: #ce9178;
+            margin-left: 20px;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+    <script>
+        const DESIGN_INSTRUCTION_KEY = 'EDITOR:DESIGN_INSTRUCTION';
+        const SUPPLIER_CODE = 'PFC';
+        const PRODUCT_CODE = '10086021';
+
+        let lastPrintJobGuid = null;
+
+        function onTdReady() {
+            logEvent('Script', 'Initialized', 'TronDesigner API is ready');
+        }
+
+        function onPrintJobCreated(event) {
+            lastPrintJobGuid = event && (event.entityGuid || (event.detail && event.detail.printJobGuid));
+            document.getElementById('guid-display').textContent = lastPrintJobGuid || '(none)';
+            logEvent('PrintJob', 'Created', `GUID: ${lastPrintJobGuid}`, event && event.detail && event.detail.customProperties);
+        }
+
+        function onPrintJobUpdated(event) {
+            logEvent('PrintJob', 'Updated', `GUID: ${event && event.entityGuid}`, event && event.detail && event.detail.customProperties);
+        }
+
+        function getInstructions() {
+            return document.getElementById('instructions-text').value;
+        }
+
+        // Opens the editor with the given value of EDITOR:DESIGN_INSTRUCTION (JSON editor arguments).
+        function openWithInstructions(instructions, key = DESIGN_INSTRUCTION_KEY) {
+            const customProperties = { [key]: instructions };
+            logEvent('Open', 'Create', 'customProperties', customProperties);
+            window.tronDesigner.openDesigner({
+                openMode: 'Create',
+                dataMode: 'Exact',
+                printJob: {
+                    customProperties,
+                    addProducts: { supplierCode: SUPPLIER_CODE, variants: [{ productCode: PRODUCT_CODE }] },
+                    addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }]
+                }
+            }, { mode: 'dialog' });
+        }
+
+        function openWithBuilder() {
+            const instructions = getInstructions();
+            logEvent('Open', 'Create (builder)', 'addCustomProperty', { [DESIGN_INSTRUCTION_KEY]: instructions });
+            window.tronDesigner
+                .addCustomProperty(DESIGN_INSTRUCTION_KEY, instructions)
+                .setExactProduct(SUPPLIER_CODE, undefined, (p) => p.addVariant(PRODUCT_CODE))
+                .addExactPrinting('front', 'PAD03')
+                .open({ mode: 'dialog' });
+        }
+
+        function openWithJson() {
+            openWithInstructions(getInstructions());
+        }
+
+        function openWithTwoPrintings() {
+            const customProperties = { [DESIGN_INSTRUCTION_KEY]: getInstructions() };
+            logEvent('Open', 'Create (2 printings)', 'customProperties', customProperties);
+            window.tronDesigner.openDesigner({
+                openMode: 'Create',
+                dataMode: 'Exact',
+                printJob: {
+                    customProperties,
+                    addProducts: { supplierCode: SUPPLIER_CODE, variants: [{ productCode: PRODUCT_CODE }] },
+                    addPrintings: [
+                        { printPositionCode: 'front', printTechnologyCode: 'PAD03' },
+                        { printPositionCode: 'wrap', printTechnologyCode: 'LASR03' }
+                    ]
+                }
+            }, { mode: 'dialog' });
+        }
+
+        // Edit mode: customProperties are merged into the stored ones.
+        // `instructions === undefined` omits the key, so the saved value is kept.
+        function openEdit(instructions) {
+            if (!lastPrintJobGuid) {
+                alert('Create a print job first (open the editor above and confirm the design).');
+                return;
+            }
+            const printJob = { printJobGuid: lastPrintJobGuid };
+            if (instructions !== undefined) printJob.customProperties = { [DESIGN_INSTRUCTION_KEY]: instructions };
+            logEvent('Open', 'Edit', `GUID: ${lastPrintJobGuid}`, printJob.customProperties || '(key omitted)');
+            window.tronDesigner.openDesigner({ openMode: 'Edit', printJob }, { mode: 'dialog' });
+        }
+
+        function openView() {
+            if (!lastPrintJobGuid) {
+                alert('Create a print job first (open the editor above and confirm the design).');
+                return;
+            }
+            logEvent('Open', 'View', `GUID: ${lastPrintJobGuid}`);
+            window.tronDesigner.setPrintJob(lastPrintJobGuid, 'View').open({ mode: 'dialog' });
+        }
+
+        let eventLog = [];
+
+        function logEvent(type, action, message, data = null) {
+            eventLog.push({ timestamp: new Date().toLocaleTimeString(), type, action, message, data });
+            updateEventLog();
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        }
+
+        function updateEventLog() {
+            const logContainer = document.getElementById('event-log');
+            if (!logContainer) return;
+            logContainer.innerHTML = eventLog.map(e => `
+                <div class="event-entry">
+                    <span class="event-time">[${e.timestamp}]</span>
+                    <span class="event-type">${e.type}</span>.<span class="event-action">${e.action}</span>
+                    ${e.message ? '- ' + escapeHtml(e.message) : ''}
+                    ${e.data !== null && e.data !== undefined
+                        ? `<div class="event-data">${escapeHtml(typeof e.data === 'string' ? e.data : JSON.stringify(e.data, null, 2))}</div>`
+                        : ''}
+                </div>
+            `).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            eventLog = [];
+            updateEventLog();
+        }
+    </script>
+    <title>Tron Designer Integration - Design Instructions Example</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Custom-properties.html#show-design-instructions-in-the-editor" target="_blank">Design instructions</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Design Instructions</h3>
+    <p>Pass the special custom property <code>EDITOR:DESIGN_INSTRUCTION</code> to show your customer instructions while they design.
+        The editor displays the value as an informational notification labeled <strong>Design instructions:</strong> at the bottom of the
+        design canvas, before any other informational messages. The instructions apply to the whole print job (all printings).</p>
+    <ul>
+        <li>The key is case-sensitive — use it exactly as shown.</li>
+        <li>The notification appears only when the value is a non-empty string.</li>
+        <li>The value is saved with the print job like any other custom property. In <code>Edit</code> mode, pass the key again to
+            update it, or an empty string to hide the notification. Omitting the key keeps the saved value.</li>
+    </ul>
+</div>
+
+<div class="instructions-input">
+    <label for="instructions-text"><strong>Instructions text</strong> (used by the JS builder, JSON and Edit buttons):</label>
+    <textarea id="instructions-text">Place your logo in the center of the print area. Keep at least 5 mm distance from the edges.</textarea>
+</div>
+
+<h3 style="margin-left: 10px;">Create a print job with instructions</h3>
+<div class="examples">
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">HTML Attribute</span>
+            <h4>data-td-custom-properties</h4>
+            <button
+                    class="btn"
+                    data-td-action="OpenCreate"
+                    data-td-supplier-code="PFC"
+                    data-td-product-code="10086021"
+                    data-td-print-position-code="front"
+                    data-td-print-technology-code="PAD03"
+                    data-td-custom-properties='{"EDITOR:DESIGN_INSTRUCTION":"Place your logo in the center of the print area."}'>
+                Open Designer
+                <br>
+                <small>Fixed text from the attribute</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">JS Builder</span>
+            <h4>addCustomProperty()</h4>
+            <button class="btn" onclick="openWithBuilder()">
+                Open Designer
+                <br>
+                <small>Text from the input above</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">JSON</span>
+            <h4>printJob.customProperties</h4>
+            <button class="btn" onclick="openWithJson()">
+                Open Designer
+                <br>
+                <small>Text from the input above</small>
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
+        <div class="actions">
+            <span class="approach-label">JSON</span>
+            <h4>Two printings</h4>
+            <div class="expected">Instructions apply to the whole print job — the notification stays visible when switching between <em>front</em> and <em>wrap</em>.</div>
+            <button class="btn" onclick="openWithTwoPrintings()">
+                Open Designer
+                <br>
+                <small>front/PAD03 + wrap/LASR03</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">Edge cases</h3>
+<div class="examples">
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edge">Long text</span>
+            <div class="expected">Several sentences — check wrapping and that the canvas stays usable.</div>
+            <button class="btn" onclick="openWithInstructions('Please upload your logo in vector format (SVG, PDF or AI) for best results. Place the logo in the center of the print area and keep at least 5 mm from all edges. Use a maximum of two colors. If your logo contains thin lines below 0.3 mm, they may not be printed correctly. Text should be at least 6 pt high. Contact our support team if you are unsure about anything.')">
+                Open Designer
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edge">Markup in value</span>
+            <div class="expected">HTML / script in the value must never execute. Check how tags and quotes are displayed.</div>
+            <button class="btn" onclick="openWithInstructions('Use <b>bold</b> &amp; <i>italic</i> &quot;quotes&quot; <script>alert(&quot;XSS&quot;)</script><img src=x onerror=alert(1)>')">
+                Open Designer
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edge">Empty string</span>
+            <div class="expected">Expected: no design instructions notification.</div>
+            <button class="btn" onclick="openWithInstructions('')">
+                Open Designer
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edge">Whitespace only</span>
+            <div class="expected">Value <code>"&nbsp;&nbsp;&nbsp;"</code>. Docs say only non-empty strings show a notification — check whether an empty notification appears.</div>
+            <button class="btn" onclick="openWithInstructions('   ')">
+                Open Designer
+            </button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edge">Wrong key casing</span>
+            <div class="expected">Key <code>editor:design_instruction</code>. Expected: no notification (key is case-sensitive), stored as a normal custom property.</div>
+            <button class="btn" onclick="openWithInstructions('This should NOT be shown.', 'editor:design_instruction')">
+                Open Designer
+            </button>
+        </div>
+    </div>
+</div>
+
+<h3 style="margin-left: 10px;">Edit / View an existing print job</h3>
+<div class="examples">
+    <div class="example">
+        <div class="actions">
+            <p><strong>Last created print job:</strong><br><code id="guid-display">(none — create one above first)</code></p>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edit">Edit</span>
+            <h4>Key omitted</h4>
+            <div class="expected">Expected: saved instructions are shown again.</div>
+            <button class="btn" onclick="openEdit(undefined)">Open Edit</button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edit">Edit</span>
+            <h4>Update instructions</h4>
+            <div class="expected">Expected: text from the input above replaces the saved value.</div>
+            <button class="btn" onclick="openEdit(getInstructions())">Open Edit</button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edit">Edit</span>
+            <h4>Empty string</h4>
+            <div class="expected">Expected: notification is hidden (and stays hidden on the next "Key omitted" edit).</div>
+            <button class="btn" onclick="openEdit('')">Open Edit</button>
+        </div>
+    </div>
+
+    <div class="example">
+        <div class="actions">
+            <span class="approach-label edit">View</span>
+            <h4>Read-only</h4>
+            <div class="expected">Check whether the instructions are shown in View mode.</div>
+            <button class="btn" onclick="openView()">Open View</button>
+        </div>
+    </div>
+</div>
+
+<div style="margin: 30px 10px 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Event Log</h3>
+        <button class="btn" onclick="clearLog()">Clear Log</button>
+    </div>
+    <div id="event-log" class="event-log">
+        <div style="color: #858585; text-align: center; padding: 50px;">
+            Waiting for events...
+        </div>
+    </div>
+</div>
+
+<div style="margin: 30px 10px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+
+    <h4>1 — HTML data attribute</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>&lt;button
+    data-td-action="OpenCreate"
+    data-td-supplier-code="PFC"
+    data-td-product-code="10086021"
+    data-td-print-position-code="front"
+    data-td-print-technology-code="PAD03"
+    data-td-custom-properties='{"EDITOR:DESIGN_INSTRUCTION":"Place your logo in the center of the print area."}'&gt;
+    Design your print
+&lt;/button&gt;</code></pre>
+
+    <h4 style="margin-top: 20px;">2 — JS builder</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner
+    .addCustomProperty('EDITOR:DESIGN_INSTRUCTION', 'Place your logo in the center of the print area.')
+    .setExactProduct('PFC', undefined, (p) =&gt; p.addVariant('10086021'))
+    .addExactPrinting('front', 'PAD03')
+    .open({ mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">3 — JSON editor arguments</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
+    openMode: 'Create',
+    dataMode: 'Exact',
+    printJob: {
+        customProperties: {
+            'EDITOR:DESIGN_INSTRUCTION': 'Place your logo in the center of the print area.'
+        },
+        addProducts: { supplierCode: 'PFC', variants: [{ productCode: '10086021' }] },
+        addPrintings: [{ printPositionCode: 'front', printTechnologyCode: 'PAD03' }]
+    }
+}, { mode: 'dialog' });</code></pre>
+
+    <h4 style="margin-top: 20px;">4 — Update or hide in Edit mode</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>// Custom properties are merged in Edit mode:
+// pass a new value to update, '' to hide, or omit the key to keep the saved value.
+window.tronDesigner.openDesigner({
+    openMode: 'Edit',
+    printJob: {
+        printJobGuid: printJobGuid,
+        customProperties: { 'EDITOR:DESIGN_INSTRUCTION': '' }
+    }
+}, { mode: 'dialog' });</code></pre>
+</div>
+</body>
+</html>

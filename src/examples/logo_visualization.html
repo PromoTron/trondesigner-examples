@@ -70,6 +70,12 @@
                 currentLogoGuid = event.entityGuid || null;
                 updateLogoStatus();
             });
+
+            // Reflect a logo selected earlier (kept by the script between page loads)
+            td.getLogo().then((logo) => {
+                currentLogoGuid = logo ? logo.logoGuid : null;
+                updateLogoStatus();
+            });
         }
 
         const updateLogoStatus = () => {
@@ -83,17 +89,13 @@
         // Open logo upload dialog
         const openUpload = () => {
             console.log("Opening logo upload...");
-            const td = window.tronDesigner;
-            td.setOpenMode("OpenUpload");
-            td.open({mode: "dialog"});
+            window.tronDesigner.openLogoUpload({mode: "dialog"});
         };
 
         // Open logo gallery dialog (select an existing logo)
         const openGallery = () => {
             console.log("Opening logo gallery...");
-            const td = window.tronDesigner;
-            td.setOpenMode("OpenGallery");
-            td.open({mode: "dialog"});
+            window.tronDesigner.openLogoGallery({mode: "dialog"});
         };
 
         // Clear logo - visualization images fall back to their original src
@@ -120,12 +122,8 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
-                Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Logo-visualizations.html" target="_blank">Logo visualizations</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>

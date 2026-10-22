@@ -13,15 +13,15 @@
     <script>
         const td_open = () => {
             console.log("Opening Tron Designer...");
-            const td = window.tronDesigner;
-            td.setPartialProduct('PFC', undefined, (b) => {
-                b.setProductModel('100860');
-            });
-            console.log(td.argsBuilder.build())
-            td.openDesigner(td.argsBuilder.build(), { mode: "dialog" });
+            // open() uses the arguments collected on the builder and then resets it
+            window.tronDesigner
+                .setPartialProduct('PFC', undefined, (b) => {
+                    b.setProductModel('100860');
+                })
+                .open({ mode: "dialog" });
         }
     </script>
-    <title>Tron Designer Integration - JS Builder Basic Example</title>
+    <title>Tron Designer Integration - Builder Partial Example</title>
 </head>
 <body>
 <div class="header">
@@ -29,9 +29,9 @@
     <h1>
         <span>TronDesigner</span> - Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/JavaScript-builder-API.html" target="_blank">JavaScript builder API</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Data-modes.html" target="_blank">Data modes</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>

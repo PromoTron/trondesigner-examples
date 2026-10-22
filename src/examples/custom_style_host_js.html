@@ -9,23 +9,22 @@
             referrerpolicy="origin"
             data-td-api="{TD_URL}/api"
             data-td-api-key="{TD_API_KEY}"
-            data-td-script-initialized-callback="onTronDesignerReady"
     ></script>
     <script>
 
         const td_create_new = () => {
-            const td = window.tronDesigner;
-
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086001');
-                b.addVariant('10086055');
-            });
-            td.addExactPrinting('front', 'PAD03');
-
-            td.open({mode: "dialog"});
+            window.tronDesigner
+                .setExactProduct('PFC', undefined, (b) => {
+                    b.addVariant('10086001');
+                    b.addVariant('10086055');
+                })
+                .addExactPrinting('front', 'PAD03')
+                .open({mode: "dialog"});
         }
     </script>
     <script>
+        // The editor renders inside the open shadow root of a <trondesigner-editor> element, so page CSS doesn't reach it.
+        // A new element is created every time the editor opens - watch for it and add a <style> to its shadow root.
         const EDITOR_SELECTOR = "trondesigner-editor";
 
         function injectStyle(editorEl) {
@@ -63,9 +62,8 @@
             subtree: true
         });
 
-        obs.observe(document.documentElement, { childList: true, subtree: true });
     </script>
-    <title>Tron Designer Integration - Event Handling Example</title>
+    <title>Tron Designer Integration - Modify Styles from Host Example</title>
 </head>
 <body>
 <div class="header">
@@ -74,15 +72,21 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a>
-            &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer
-                Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Styling-the-editor.html" target="_blank">Styling the editor</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Modify Styles from the Host Page</h3>
+    <p>The editor renders inside the shadow DOM of the <code>&lt;trondesigner-editor&gt;</code> element, so your page's CSS doesn't apply to it.
+        This page watches for the element and appends a <code>&lt;style&gt;</code> to its (open) shadow root - here hiding the secondary
+        footer button <em>Create PDF proofreading</em>.</p>
+    <p>If the same CSS fits every page, prefer the <strong>Custom CSS</strong> setting in the Admin Portal - no script needed.
+        The editor's IDs and class names (such as <code>#TDMainFooterControls</code>) are internal, not a versioned API, and can change
+        with TronDesigner updates.</p>
 </div>
 
 <div class="examples">
@@ -94,10 +98,36 @@
             <button class="btn" onclick="td_create_new()">
                 Create Print Job
                 <br>
-                <small>Patched style to hide 'Proofreading' button in editor footer</small>
+                <small>Hides the 'Create PDF proofreading' button in the editor footer</small>
             </button>
         </div>
     </div>
+</div>
+
+<div style="margin: 30px 10px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Code</h3>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>function injectEditorStyle(editor) {
+    const root = editor.shadowRoot;
+    if (!root || root.querySelector('style[data-host-style]')) return;
+
+    const style = document.createElement('style');
+    style.dataset.hostStyle = '1';
+    style.textContent = `
+        #TDMainFooterControls button.btn-secondary { display: none !important; }
+    `;
+    root.appendChild(style);
+}
+
+// A new &lt;trondesigner-editor&gt; is created every time the editor opens
+new MutationObserver((mutations) =&gt; {
+    mutations.forEach((mutation) =&gt; {
+        mutation.addedNodes.forEach((node) =&gt; {
+            if (!(node instanceof Element)) return;
+            if (node.matches('trondesigner-editor')) injectEditorStyle(node);
+            node.querySelectorAll('trondesigner-editor').forEach(injectEditorStyle);
+        });
+    });
+}).observe(document.documentElement, { childList: true, subtree: true });</code></pre>
 </div>
 </body>
 </html>

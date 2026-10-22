@@ -103,18 +103,15 @@
         }
 
         function openWithBuilder() {
-            const td = window.tronDesigner;
-            td.setExactProduct('PFC', undefined, (b) => {
-                b.addVariant('10086021');
-            });
-            td.addExactPrinting('front', 'PAD03');
-            const args = td.argsBuilder.build();
-            args.printJob.customProperties = {
-                source: 'js-builder',
-                cartLineId: 'CL-' + Math.floor(Math.random() * 9000 + 1000),
-                campaign: 'SPRING24'
-            };
-            td.openDesigner(args, { mode: 'dialog' });
+            window.tronDesigner
+                .addCustomProperties({
+                    source: 'js-builder',
+                    cartLineId: 'CL-' + Math.floor(Math.random() * 9000 + 1000),
+                    campaign: 'SPRING24'
+                })
+                .setExactProduct('PFC', undefined, (b) => b.addVariant('10086021'))
+                .addExactPrinting('front', 'PAD03')
+                .open({ mode: 'dialog' });
         }
 
         function openWithPrintJobArgs() {
@@ -143,6 +140,18 @@
             updateEventLog();
         }
 
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        }
+
+        // Long strings (e.g. the SVG of a text) are shortened for the log
+        function formatData(data) {
+            if (typeof data === 'string') return data;
+            if (data instanceof Blob) return `Blob (${data.type}, ${data.size} bytes)`;
+            return JSON.stringify(data, (key, value) =>
+                typeof value === 'string' && value.length > 200 ? value.slice(0, 200) + '… (' + value.length + ' chars)' : value, 2);
+        }
+
         function updateEventLog() {
             const logContainer = document.getElementById('event-log');
             if (!logContainer) return;
@@ -152,7 +161,7 @@
                     <span class="event-type">${e.type}</span>.<span class="event-action">${e.action}</span>
                     ${e.message ? '- ' + e.message : ''}
                     ${e.data !== null && e.data !== undefined
-                        ? `<div class="event-data">${typeof e.data === 'string' ? e.data : JSON.stringify(e.data, null, 2)}</div>`
+                        ? `<div class="event-data">${escapeHtml(formatData(e.data))}</div>`
                         : ''}
                 </div>
             `).join('');
@@ -173,10 +182,8 @@
     <h1>
         <span>TronDesigner</span> – Integration Examples<br>
         <small>Docs:
-            <a href="https://help.promotron.com/en/help/articles/5362575-integration-scenarios" target="_blank">Scenarios</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/8234354-integration-logic" target="_blank">Modes</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/articles/1763253-session-tracking-and-identifiers" target="_blank">Custom Properties</a> &nbsp;|&nbsp;
-            <a href="https://help.promotron.com/en/help/collections/5977087-developer-guide" target="_blank">Developer Guide</a>
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Custom-properties.html" target="_blank">Custom properties</a>
         </small>
     </h1>
     <a href="index.html">Back to examples</a>
@@ -188,9 +195,10 @@
     <p>The same <code>customProperties</code> object can be passed in three ways. All three produce identical behaviour; pick the one that fits your integration style:</p>
     <ul>
         <li><strong>HTML data attribute</strong> — <code>data-td-custom-properties</code> JSON string on the action button</li>
-        <li><strong>JS builder</strong> — mutate the object returned by <code>argsBuilder.build()</code> before passing it to <code>openDesigner()</code></li>
+        <li><strong>JS builder</strong> — <code>addCustomProperties({...})</code> / <code>addCustomProperty(key, value)</code> on the builder, then <code>open()</code></li>
         <li><strong>Print job arguments</strong> — nest <code>customProperties</code> directly inside the <code>printJob</code> argument of <code>openDesigner()</code></li>
     </ul>
+    <p>Special keys starting with <code>EDITOR:</code> change the editor itself - see <a href="design_instructions.html">Design Instructions</a> and <a href="suggested_colors.html">Suggested Design Colors</a>.</p>
     <p>After you finish a design, the <code>printJob.created</code> callback fires. The custom properties you sent are highlighted in green below the event log.</p>
 </div>
 
@@ -219,7 +227,7 @@
         <img src="https://troncloudprod.blob.core.windows.net/mockup-preview-images/5d1a2633-1ada-4de0-a565-c22b0a2af3f0" alt="Oregon 400 ml - Red"/>
         <div class="actions">
             <span class="approach-label">JS Builder</span>
-            <h4>argsBuilder.build() + inject</h4>
+            <h4>addCustomProperties()</h4>
             <button class="btn" onclick="openWithBuilder()">
                 Open Designer
                 <br>
@@ -274,18 +282,16 @@
 &lt;/button&gt;</code></pre>
 
     <h4 style="margin-top: 20px;">2 — JS builder</h4>
-    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const td = window.tronDesigner;
-td.setExactProduct('PFC', undefined, (b) =&gt; { b.addVariant('10086021'); });
-td.addExactPrinting('front', 'PAD03');
-
-const args = td.argsBuilder.build();
-args.printJob.customProperties = {
-    source: 'js-builder',
-    cartLineId: 'CL-1234',
-    campaign: 'SPRING24'
-};
-
-td.openDesigner(args, { mode: 'dialog' });</code></pre>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner
+    .addCustomProperties({
+        source: 'js-builder',
+        cartLineId: 'CL-1234',
+        campaign: 'SPRING24'
+    })
+    .addCustomProperty('region', 'EU')
+    .setExactProduct('PFC', undefined, (b) =&gt; b.addVariant('10086021'))
+    .addExactPrinting('front', 'PAD03')
+    .open({ mode: 'dialog' });</code></pre>
 
     <h4 style="margin-top: 20px;">3 — Print job arguments</h4>
     <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>window.tronDesigner.openDesigner({
