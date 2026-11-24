@@ -1,0 +1,264 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+    ></script>
+    <style>
+        .layout { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+        .commands { background: #f5f5f5; padding: 15px; border-radius: 8px; }
+        .commands h3 { margin: 0 0 8px; }
+        .commands h4 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; color: #666; }
+        .commands .btn { display: block; width: 100%; margin: 4px 0; text-align: left; }
+        .commands .btn:disabled { opacity: .45; cursor: not-allowed; }
+        .status { font-size: 13px; margin: 8px 0; }
+        .status code { background: #fff; padding: 1px 4px; border-radius: 3px; }
+        #editor-container { height: 720px; border: 2px solid #ddd; border-radius: 8px; background: #f9f9f9; }
+        #api-log { height: 260px; overflow-y: auto; background: #1e1e1e; color: #ddd; font: 12px/1.5 Consolas, monospace;
+            padding: 10px; border-radius: 8px; margin-top: 20px; white-space: pre-wrap; }
+        #api-log .call { color: #9cdcfe; }
+        #api-log .result { color: #b5cea8; }
+        #api-log .error { color: #f48771; }
+        #api-log .event { color: #dcdcaa; }
+        #saved-print-job { margin-top: 15px; font-size: 13px; }
+        #saved-print-job img { height: 110px; margin: 6px 6px 0 0; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+    <script>
+        // The product: an A5 notebook (Mid Ocean MO8360) in black and blue, printed on the front and the back.
+        const editorArguments = {
+            openMode: 'Create',
+            dataMode: 'Exact',
+            printJob: {
+                title: 'Editor API example',
+                addProducts: {
+                    supplierGuid: '3cdcb852-2e30-43b6-a078-fa95a51dca3c', // Mid Ocean
+                    variants: [{ productCode: 'MO8360-03' }, { productCode: 'MO8360-04' }],
+                },
+                addPrintings: [
+                    { printPositionCode: 'FRONT', printTechnologyCode: 'S2' },
+                    { printPositionCode: 'BACK', printTechnologyCode: 'S2' },
+                ],
+            },
+        };
+
+        /** The running editor: the <trondesigner-editor> element returned by openDesigner(), null when closed. */
+        let editor = null;
+
+        // ── opening the editor ────────────────────────────────────────────────────────────────
+
+        async function openEditor() {
+            if (!window.tronDesigner) {
+                log('error', 'website-integration.js is not loaded yet.');
+                return;
+            }
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+            setStatus('loading');
+
+            // openDesigner() resolves to the running editor as soon as it is in the page - or to null when it did not open
+            log('call', 'tronDesigner.openDesigner(editorArguments, { mode: "container" })');
+            editor = await window.tronDesigner.openDesigner(editorArguments, {
+                mode: 'container',
+                container,
+                onClose: () => {
+                    editor = null;
+                    setStatus('closed');
+                },
+            });
+            if (!editor) {
+                log('error', 'The editor did not open - see the browser console.');
+                setStatus('closed');
+                return;
+            }
+
+            // the element's events - prefixed with "td" so they don't collide with your page's events
+            editor.addEventListener('tdReady', (e) => log('event', 'tdReady', e.detail));
+            editor.addEventListener('tdSelectionChange', (e) => log('event', 'tdSelectionChange', e.detail));
+            editor.addEventListener('tdPrintJobChange', (e) => log('event', 'tdPrintJobChange', e.detail));
+            editor.addEventListener('tdClose', (e) => log('event', 'tdClose', e.detail));
+
+            // the editor loads the product, mockups and logo first; commands would wait as well
+            try {
+                await editor.whenReady(60000);
+            } catch (error) {
+                log('error', `whenReady → ${error.code}`, error.message);
+                return;
+            }
+            setStatus('ready');
+        }
+
+        // ── commands ──────────────────────────────────────────────────────────────────────────
+
+        /** Runs one command and logs its result or its error code. */
+        async function run(label, command) {
+            if (!editor) return undefined;
+            log('call', label);
+            try {
+                const result = await command(editor);
+                log('result', label, result);
+                return result;
+            } catch (error) {
+                // every command rejects with { code, command, message } - branch on code, not on message
+                log('error', `${label} → ${error.code}`, error.message);
+                return undefined;
+            }
+        }
+
+        const showBlue = () => run("selectVariant('MO8360-04')", (e) => e.selectVariant('MO8360-04'));
+        const showBack = () => run("setSelectedPrinting('BACK', 'S2')", (e) => e.setSelectedPrinting('BACK', 'S2'));
+        const showUnknown = () => run("setSelectedPrinting('BACK', 'XX')", (e) => e.setSelectedPrinting('BACK', 'XX'));
+        const checkDesign = () => run('hasMotive()', (e) => e.hasMotive());
+        const getStatus = () => run('getStatus()', (e) => e.getStatus());
+
+        async function save() {
+            // like the editor's Save button; saving again updates the same print job (isUpdate: true)
+            if (!(await run('hasMotive()', (e) => e.hasMotive()))) {
+                log('error', 'Add a logo or a text in the editor first.');
+                return;
+            }
+            await run('savePrintJob()', (e) => e.savePrintJob());
+        }
+
+        async function showSavedPrintJob() {
+            // the print job as it was LAST SAVED (code, images, print data) - call savePrintJob() right before it.
+            // Before the first save it fails with INVALID_STATE.
+            const printJob = await run('getPrintJob()', (e) => e.getPrintJob());
+            const target = document.getElementById('saved-print-job');
+            if (!printJob) return;
+            const images = printJob.printings
+                .flatMap((p) => p.printMotive.printAreaImages ?? [])
+                .filter((image) => image.type === 'MOCKUP')
+                .map((image) => `<img src="${image.printAreaImageFile.printJobFileUrl}" alt="${image.type}">`);
+            target.innerHTML =
+                `<strong>${printJob.code}</strong> · ${printJob.state} · ` +
+                printJob.printings.map((p) => `${p.printData.positionCodePtn} / ${p.printData.technologyCodePtn}`).join(', ') +
+                `<br>${images.join('')}`;
+        }
+
+        async function proofreading() {
+            // generateProofreading() saves the print job and returns the PDF as a Blob
+            const pdf = await run('generateProofreading()', (e) => e.generateProofreading());
+            if (pdf) window.open(URL.createObjectURL(pdf), '_blank');
+        }
+
+        const downloadPreview = () => run('downloadPreviewImage()', (e) => e.downloadPreviewImage());
+        // false when the customer has a design and chose to stay
+        const closeFromPage = () => run('closeEditor({ confirmUnsavedChanges: true })', (e) => e.closeEditor({ confirmUnsavedChanges: true }));
+
+        // ── page helpers ──────────────────────────────────────────────────────────────────────
+
+        function setStatus(state) {
+            const ready = state === 'ready';
+            document.getElementById('state').textContent = state;
+            document.getElementById('api-version').textContent = ready ? editor.getApiVersion() : '-';
+            document.querySelectorAll('[data-command]').forEach((button) => {
+                // supports() is false until the editor is ready, and for commands an older editor does not have
+                button.disabled = !ready || !editor.supports(button.dataset.command);
+            });
+            document.getElementById('open').disabled = state === 'loading' || ready;
+        }
+
+        function log(kind, text, data) {
+            const line = document.createElement('div');
+            line.className = kind;
+            const time = new Date().toLocaleTimeString();
+            line.textContent = `${time}  ${text}${data !== undefined ? `  ${JSON.stringify(data)}` : ''}`;
+            const target = document.getElementById('api-log');
+            target.prepend(line);
+        }
+    </script>
+    <title>Tron Designer Integration - Editor API - Controlling the editor</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Controlling-the-editor.html" target="_blank">Controlling the editor</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Editor API – Controlling the editor</h3>
+    <p><code>openDesigner()</code> returns the running editor. Your page calls its commands: show a colour or a printing,
+        check the design, save, read the saved print job, generate the proofreading, download images, close the editor.
+        Every command returns a promise and fails with an error <code>code</code>; the log below shows the calls, the
+        results, the errors and the editor's <code>td…</code> events.</p>
+    <p><strong>Try:</strong> open the editor, add a logo or a text, then <em>Save</em> and <em>Get saved print job</em>.
+        <em>Get saved print job</em> before the first save fails with <code>INVALID_STATE</code>, and the unknown technique
+        with <code>NOT_FOUND</code>.</p>
+</div>
+
+<div class="layout">
+    <div class="commands">
+        <h3>Your page</h3>
+        <button class="btn" id="open" onclick="openEditor()">Open the editor</button>
+        <div class="status">State: <code id="state">closed</code> · API version: <code id="api-version">-</code></div>
+
+        <h4>Show</h4>
+        <button class="btn" data-command="selectVariant" onclick="showBlue()" disabled>Show the blue notebook</button>
+        <button class="btn" data-command="setSelectedPrinting" onclick="showBack()" disabled>Show the back printing</button>
+        <button class="btn" data-command="setSelectedPrinting" onclick="showUnknown()" disabled>Show an unknown technique (error)</button>
+
+        <h4>Check</h4>
+        <button class="btn" data-command="hasMotive" onclick="checkDesign()" disabled>Has a design?</button>
+        <button class="btn" data-command="getStatus" onclick="getStatus()" disabled>Status</button>
+
+        <h4>Save and use the print job</h4>
+        <button class="btn" data-command="savePrintJob" onclick="save()" disabled>Save</button>
+        <button class="btn" data-command="getPrintJob" onclick="showSavedPrintJob()" disabled>Get saved print job</button>
+        <button class="btn" data-command="generateProofreading" onclick="proofreading()" disabled>Proofreading PDF</button>
+        <button class="btn" data-command="downloadPreviewImage" onclick="downloadPreview()" disabled>Download preview image</button>
+
+        <h4>Close</h4>
+        <button class="btn" data-command="closeEditor" onclick="closeFromPage()" disabled>Close (ask if there is a design)</button>
+
+        <div id="saved-print-job"></div>
+    </div>
+
+    <div id="editor-container"></div>
+</div>
+
+<div id="api-log"></div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Notes</h3>
+    <ul style="line-height: 1.8;">
+        <li><code>openDesigner()</code> (and the builder's <code>open()</code>) resolve to the editor element as soon as it is in the page, or to <code>null</code> when it did not open; they never reject. <code>window.tronDesigner.getActiveDesigner()</code> returns the editor opened last.</li>
+        <li>Wait with <code>await editor.whenReady()</code> or the <code>tdReady</code> event; commands called earlier wait up to 60 seconds and then fail with <code>NOT_READY</code>.</li>
+        <li><code>getPrintJob()</code> returns the print job <strong>as it was last saved</strong> - call <code>savePrintJob()</code> right before it.</li>
+        <li>Changes and saves run one at a time: a second one while the first is running fails with <code>BUSY</code>.</li>
+        <li>Check <code>editor.supports(command)</code> before relying on a newer command: the editor is loaded from TronDesigner and can be newer than your code.</li>
+    </ul>
+
+    <h4 style="margin-top: 20px;">Code Example:</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const editor = await tronDesigner.openDesigner(editorArguments, {
+    mode: "container",
+    container: document.getElementById("editor-container")
+});
+if (!editor) return; // did not open - see the console
+
+await editor.whenReady();
+if (!(await editor.hasMotive())) return showMessage("Add a logo or a text first.");
+
+try {
+    await editor.savePrintJob();
+    const printJob = await editor.getPrintJob(); // code, printings, image URLs
+    addToCart(printJob.printJobGuid, printJob.code);
+} catch (error) {
+    if (error.code === "BUSY") return; // another save is running
+    throw error;
+}</code></pre>
+</div>
+</body>
+</html>

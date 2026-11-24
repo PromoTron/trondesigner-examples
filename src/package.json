@@ -6,7 +6,9 @@
     "example": "examples"
   },
   "scripts": {
-    "run": "node server.mjs"
+    "run": "node server.mjs",
+    "run:local": "node --env-file=.env.local server.mjs",
+    "run:dev": "node --env-file=.env.dev server.mjs"
   },
   "repository": {
     "type": "git",

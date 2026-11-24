@@ -47,6 +47,13 @@ npm ci
 npm run run
 ```
 
+With an env file other than `.env`:
+
+```bash
+npm run run:local   # .env.local - a TronDesigner running on this machine
+npm run run:dev     # .env.dev - the DEV environment
+```
+
 Default app URL: `http://localhost:3000`
 
 ## Docker

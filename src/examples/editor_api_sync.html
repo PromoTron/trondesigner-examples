@@ -1,0 +1,324 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/style.css">
+    <script
+            async
+            src="{TD_URL}/js/website-integration.js"
+            referrerpolicy="origin"
+            data-td-api="{TD_URL}/api"
+            data-td-api-key="{TD_API_KEY}"
+            data-td-script-initialized-callback="openEditor"
+    ></script>
+    <style>
+        .layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+        .configurator { background: #f5f5f5; padding: 15px; border-radius: 8px; }
+        .configurator h3 { margin: 0 0 10px; }
+        .configurator h4 { margin: 16px 0 6px; font-size: 13px; text-transform: uppercase; color: #666; }
+        .configurator.busy { opacity: .6; pointer-events: none; }
+        .row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin: 3px 0; border-radius: 6px; background: #fff;
+            border: 2px solid transparent; }
+        .row.shown { border-color: #0066cc; }
+        .row label { flex: 1; cursor: pointer; }
+        .row input[type=number] { width: 70px; }
+        .row select { width: 150px; }
+        .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #999; display: inline-block; vertical-align: middle; }
+        #notice { margin-top: 12px; font-size: 13px; min-height: 20px; }
+        #notice.warn { color: #a15c00; }
+        #notice.error { color: #b00020; }
+        #editor-container { height: 720px; border: 2px solid #ddd; border-radius: 8px; background: #f9f9f9; }
+        #api-log { height: 220px; overflow-y: auto; background: #1e1e1e; color: #ddd; font: 12px/1.5 Consolas, monospace;
+            padding: 10px; border-radius: 8px; margin-top: 20px; white-space: pre-wrap; }
+        #api-log .call { color: #9cdcfe; }
+        #api-log .result { color: #b5cea8; }
+        #api-log .error { color: #f48771; }
+        #api-log .event { color: #dcdcaa; }
+    </style>
+    <script>
+        // ── the shop's product data (normally from the shop's own catalogue) ──────────────────
+        // A5 notebook, Mid Ocean MO8360: colours, marking zones and the techniques each zone allows.
+        const product = {
+            supplierGuid: '3cdcb852-2e30-43b6-a078-fa95a51dca3c', // Mid Ocean
+            colours: [
+                { code: 'MO8360-03', name: 'Black', hex: '#000000' },
+                { code: 'MO8360-04', name: 'Blue', hex: '#0000ff' },
+                { code: 'MO8360-06', name: 'White', hex: '#ffffff' },
+            ],
+            zones: [
+                { code: 'FRONT', name: 'Front', techniques: [['S2', 'Screen printing'], ['T1', 'Screen transfer'], ['TR', 'Transfer reflective'], ['B', 'Debossing']] },
+                { code: 'BACK', name: 'Back', techniques: [['S2', 'Screen printing'], ['T1', 'Screen transfer'], ['TR', 'Transfer reflective'], ['B', 'Debossing']] },
+                { code: 'FRONT PAD', name: 'Front, small (50 × 30 mm)', techniques: [['P4', 'Pad printing']] },
+            ],
+        };
+
+        // ── the configurator's state: the source of truth ──────────────────────────────────────
+        let state = {
+            colours: { 'MO8360-03': 50 }, // selected colour → quantity
+            zones: { FRONT: 'S2' }, // selected zone → technique
+            shown: { colour: 'MO8360-03', zone: 'FRONT' },
+        };
+
+        /** The running editor, null while it is not open. */
+        let editor = null;
+
+        /** The configurator's state as the editor's selection (PrintJobSelection). */
+        function toSelection(s) {
+            const shownZone = s.zones[s.shown.zone] ? s.shown.zone : Object.keys(s.zones)[0];
+            const shownColour = s.colours[s.shown.colour] !== undefined ? s.shown.colour : Object.keys(s.colours)[0];
+            return {
+                variants: Object.entries(s.colours).map(([productCode, quantity]) => ({ productCode, quantity })),
+                printings: Object.entries(s.zones).map(([printPositionCode, printTechnologyCode]) => ({ printPositionCode, printTechnologyCode })),
+                show: { variantCode: shownColour, printPositionCode: shownZone, printTechnologyCode: s.zones[shownZone] },
+            };
+        }
+
+        // ── open the editor with the current selection ─────────────────────────────────────────
+        async function openEditor() {
+            const selection = toSelection(state);
+            editor = await window.tronDesigner.openDesigner(
+                {
+                    openMode: 'Create',
+                    dataMode: 'Exact',
+                    // the configurator chooses colours and zones, so the editor doesn't offer them itself
+                    editorOptions: { showSelectedVariants: 'None', showSelectedPrintOptions: 'None' },
+                    printJob: {
+                        title: 'Notebook with your logo',
+                        addProducts: { supplierGuid: product.supplierGuid, variants: selection.variants },
+                        addPrintings: selection.printings,
+                    },
+                },
+                {
+                    mode: 'container',
+                    container: document.getElementById('editor-container'),
+                    onClose: () => {
+                        editor = null;
+                        render();
+                        notice('', 'The editor was closed - reload the page to start again.');
+                    },
+                },
+            );
+            if (!editor) {
+                notice('error', 'The editor did not open - see the browser console.');
+                return;
+            }
+
+            // follow the customer: changes made inside the editor come back with source 'user'
+            // (your own changes come back with source 'api' - they are already in the configurator)
+            editor.addEventListener('tdSelectionChange', ({ detail }) => {
+                log('event', 'tdSelectionChange', detail);
+                if (detail.source !== 'user') return;
+                state = { ...state, shown: { colour: detail.variantCode ?? state.shown.colour, zone: detail.printPositionCode ?? state.shown.zone } };
+                render();
+            });
+            editor.addEventListener('tdPrintJobChange', ({ detail }) => {
+                log('event', 'tdPrintJobChange', detail);
+                if (detail.source !== 'user') return; // e.g. a printing added in the editor in the Partial data mode
+                state = {
+                    ...state,
+                    colours: Object.fromEntries(detail.selection.variants.map((v) => [v.productCode, v.quantity ?? 50])),
+                    zones: Object.fromEntries(detail.selection.printings.map((p) => [p.printPositionCode, p.printTechnologyCode])),
+                };
+                render();
+            });
+
+            await editor.whenReady();
+            log('result', `editor ready, API ${editor.getApiVersion()}`);
+            render();
+        }
+
+        // ── every configurator change: send the whole selection ───────────────────────────────
+        let queue = Promise.resolve();
+
+        /** Changes run one after another (the editor answers a second change with BUSY). */
+        function change(update) {
+            queue = queue.then(() => apply(update(structuredClone(state))));
+        }
+
+        async function apply(next) {
+            if (!editor) return;
+            const previous = state;
+            state = next;
+            render(true);
+            try {
+                const result = await syncAsking(toSelection(next));
+                if (result === null) state = previous; // the customer kept the zone with the design
+                else tellAboutDesign(result);
+            } catch (error) {
+                // NOT_FOUND (unknown code), ABORTED (the customer closed the logo dialog), … - nothing changed
+                notice('error', `Not changed: ${error.code} - ${error.message}`);
+                state = previous;
+            }
+            render();
+        }
+
+        /** syncPrintJob that asks before a zone with a logo or text is removed. */
+        async function syncAsking(selection) {
+            try {
+                return await sync(selection, { removeWithGraphics: 'reject' });
+            } catch (error) {
+                if (error.code !== 'INVALID_STATE') throw error;
+                if (!confirm('The zone you removed has a design. Remove it anyway?')) return null;
+            }
+            return sync(selection);
+        }
+
+        async function sync(selection, options) {
+            log('call', 'syncPrintJob', options ? { ...selection, options } : selection);
+            try {
+                const result = await editor.syncPrintJob(selection, options);
+                log('result', 'syncPrintJob', { added: result.added, removed: result.removed, replaced: result.replaced });
+                return result;
+            } catch (error) {
+                log('error', `syncPrintJob → ${error.code}`, error.message);
+                throw error;
+            }
+        }
+
+        /** A technique change replaces the zone's printing and carries the design over - say if it was adapted. */
+        function tellAboutDesign({ replaced }) {
+            const adapted = replaced.filter(({ graphics, messages }) => graphics === 'adapted' || messages.length > 0);
+            if (adapted.length === 0) {
+                notice('', replaced.some((r) => r.graphics === 'preserved') ? 'Your design was carried over to the new technique.' : '');
+                return;
+            }
+            notice('warn', adapted.map(({ to, adaptations, messages }) => `${to.printPositionCode}: ${[...adaptations, ...messages].join('; ')}`).join(' · '));
+        }
+
+        // ── configurator UI ───────────────────────────────────────────────────────────────────
+        function toggleColour(code) {
+            change((s) => {
+                if (s.colours[code] === undefined) s.colours[code] = 50;
+                else if (Object.keys(s.colours).length > 1) delete s.colours[code]; // at least one colour
+                s.shown.colour = code;
+                return s;
+            });
+        }
+
+        function setQuantity(code, value) {
+            change((s) => ({ ...s, colours: { ...s.colours, [code]: Math.max(1, Number(value) || 1) } }));
+        }
+
+        function toggleZone(code) {
+            const zone = product.zones.find((z) => z.code === code);
+            change((s) => {
+                if (s.zones[code] === undefined) s.zones[code] = zone.techniques[0][0];
+                else if (Object.keys(s.zones).length > 1) delete s.zones[code]; // at least one printing
+                s.shown.zone = code;
+                return s;
+            });
+        }
+
+        function setTechnique(code, technique) {
+            change((s) => ({ ...s, zones: { ...s.zones, [code]: technique }, shown: { ...s.shown, zone: code } }));
+        }
+
+        function render(busy = false) {
+            document.querySelector('.configurator').classList.toggle('busy', busy || !editor);
+            document.getElementById('colours').innerHTML = product.colours
+                .map(({ code, name, hex }) => {
+                    const selected = state.colours[code] !== undefined;
+                    return `<div class="row ${state.shown.colour === code ? 'shown' : ''}">
+                        <input type="checkbox" id="c-${code}" ${selected ? 'checked' : ''} onchange="toggleColour('${code}')">
+                        <label for="c-${code}"><span class="swatch" style="background:${hex}"></span> ${name}</label>
+                        ${selected ? `<input type="number" min="1" value="${state.colours[code]}" onchange="setQuantity('${code}', this.value)"> pcs` : ''}
+                    </div>`;
+                })
+                .join('');
+            document.getElementById('zones').innerHTML = product.zones
+                .map(({ code, name, techniques }) => {
+                    const technique = state.zones[code];
+                    const options = techniques.map(([t, label]) => `<option value="${t}" ${t === technique ? 'selected' : ''}>${label}</option>`).join('');
+                    return `<div class="row ${state.shown.zone === code && technique ? 'shown' : ''}">
+                        <input type="checkbox" id="z-${code}" ${technique ? 'checked' : ''} onchange="toggleZone('${code}')">
+                        <label for="z-${code}">${name}</label>
+                        <select ${technique ? '' : 'disabled'} onchange="setTechnique('${code}', this.value)">${options}</select>
+                    </div>`;
+                })
+                .join('');
+        }
+
+        function notice(kind, text) {
+            const target = document.getElementById('notice');
+            target.className = kind;
+            target.textContent = text;
+        }
+
+        function log(kind, text, data) {
+            const line = document.createElement('div');
+            line.className = kind;
+            line.textContent = `${new Date().toLocaleTimeString()}  ${text}${data !== undefined ? `  ${JSON.stringify(data)}` : ''}`;
+            document.getElementById('api-log').prepend(line);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => render());
+    </script>
+    <title>Tron Designer Integration - Editor API - Product configurator</title>
+</head>
+<body>
+<div class="header">
+    <div><a href="https://www.trondesigner.com"><img src="https://cdn-webassets.promotron.com/images/td/logo-full-light-theme.svg" class="logo"></a></div>
+    <h1>
+        <span>TronDesigner</span> – Integration Examples<br>
+        <small>Docs:
+            <a href="https://app.trondesigner.com/docs/" target="_blank">Developer documentation</a> &nbsp;|&nbsp;
+            <a href="https://app.trondesigner.com/docs/documents/Keeping-the-print-job-in-sync.html" target="_blank">Keeping the print job in sync</a>
+        </small>
+    </h1>
+    <a href="index.html">Back to examples</a>
+</div>
+
+<div class="info-box">
+    <h3>Editor API – Product configurator</h3>
+    <p>A product page with a configurator next to the inline editor. The configurator is the source of truth: after every
+        change it sends the whole selection with <code>editor.syncPrintJob()</code>, and the editor adds, removes and
+        replaces colours and printings to match - in one step, all or nothing.</p>
+    <p><strong>Try:</strong> add a logo in the editor, then change the technique of the front to <em>Screen transfer</em>
+        (the design is carried over unchanged) or to <em>Transfer reflective</em> (one colour: the logo is prepared again and
+        the editor may ask you to confirm). Add the back or the small front zone, untick a zone that has a design (you are
+        asked first), add a colour, or click a printing tab in the editor (the configurator follows).</p>
+</div>
+
+<div class="layout">
+    <div class="configurator busy">
+        <h3>Configure your notebook</h3>
+        <h4>1 · Colours and quantities</h4>
+        <div id="colours"></div>
+        <h4>2 · Marking zones and techniques</h4>
+        <div id="zones"></div>
+        <div id="notice"></div>
+    </div>
+
+    <div id="editor-container"></div>
+</div>
+
+<div id="api-log"></div>
+
+<div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+    <h3>Implementation Notes</h3>
+    <ul style="line-height: 1.8;">
+        <li>Every selected colour is a variant of the print job, every selected zone a printing (print position + technique). Send the whole selection after each change - the editor works out what to add, remove and replace.</li>
+        <li>A new technique for a zone <strong>replaces</strong> the zone's printing and carries the design over: same size and place in millimetres, scaled down or moved if it does not fit, the logo prepared again for another colour mode. <code>result.replaced[].graphics</code> and <code>adaptations</code> tell you what happened.</li>
+        <li><code>removeWithGraphics: 'reject'</code> fails with <code>INVALID_STATE</code> instead of removing a zone with a logo or text - ask the customer, then sync again without it.</li>
+        <li>If a sync fails (<code>NOT_FOUND</code>, <code>ABORTED</code>, …) nothing changed: put the configurator back.</li>
+        <li>Run the changes one after another - a second change while the first is running fails with <code>BUSY</code>.</li>
+        <li>The first time a colour or zone is added, the editor loads its product data and mockup, so it takes a moment.</li>
+    </ul>
+
+    <h4 style="margin-top: 20px;">Code Example:</h4>
+    <pre style="background: #fff; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;"><code>const result = await editor.syncPrintJob({
+    variants: [{ productCode: "MO8360-03", quantity: 50 }, { productCode: "MO8360-04", quantity: 100 }],
+    printings: [{ printPositionCode: "FRONT", printTechnologyCode: "T1" }],
+    show: { variantCode: "MO8360-04", printPositionCode: "FRONT", printTechnologyCode: "T1" }
+}, { removeWithGraphics: "reject" });
+
+for (const { to, graphics, adaptations } of result.replaced) {
+    if (graphics === "adapted") showMessage(`${to.printPositionCode}: ${adaptations.join(", ")}`);
+}
+
+editor.addEventListener("tdSelectionChange", ({ detail }) => {
+    if (detail.source === "user") highlightZone(detail.printPositionCode);
+});</code></pre>
+</div>
+</body>
+</html>
